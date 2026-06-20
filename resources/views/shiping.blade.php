@@ -255,14 +255,14 @@
                             
                             <div class="row g-3">
                                 <div class="col-md-6">
-                                    <label class="form-label small fw-semibold text-secondary">Pilih Provinsi</label>
-                                    <select class="form-select form-select-sm" id="prov" required>
-                                        <option value="">-- Provinsi --</option>
+                                    <label class="form-label small fw-semibold">Pilih Provinsi</label>
+                                    <select class="form-select form-select-md" name="province_id" id="province_id">
+                                     <option value="">-- Provinsi --</option>
                                         @if(isset($provinces))
-                                            @foreach($provinces as $pr) 
-                                                <option value="{{ $pr['province_id'] }}">{{ $pr['province'] }}</option> 
-                                            @endforeach
-                                        @endif
+                                        @foreach($provinces as $pr)
+                                         <option value="{{ $pr['province_id'] }}">{{ $pr['province_name'] }}</option>
+                                             @endforeach
+                                      @endif
                                     </select>
                                 </div>
                                 <div class="col-md-6">
@@ -395,7 +395,7 @@
             }
         }
 
-        document.getElementById('prov').addEventListener('change', function() {
+        document.getElementById('province_id').addEventListener('change', function() {
             let citySelect = document.getElementById('city');
             citySelect.innerHTML = '<option value="">Memuat data kota...</option>';
             if (!this.value) return;
