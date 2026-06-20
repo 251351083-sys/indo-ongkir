@@ -7,7 +7,6 @@ use Illuminate\Support\Facades\Http;
 
 class CartController extends Controller
 {
-    // 1. Ambil Provinsi Menggunakan API Sandbox Komerce
     public function index()
     {
         $products = session('db_products', [
@@ -36,19 +35,17 @@ class CartController extends Controller
         $apiKey = env('RAJAONGKIR_API_KEY');
 
         try {
-            // Hit ke URL Sandbox Komerce Resmi
+            // Nembak ke Server Komerce
             $response = Http::timeout(5)->withHeaders([
                 'key' => $apiKey
             ])->get('https://api.komerce.id/site/v1/rajaongkir/province');
             
             if ($response->successful()) {
-                // PERBAIKAN: Format data Komerce dibungkus dalam array 'data'
                 $apiData = $response->json()['data'] ?? [];
-                
                 foreach ($apiData as $prov) {
                     $provinces[] = [
-                        'province_id' => $prov['province_id'] ?? $prov['id'],
-                        'province' => $prov['province'] ?? $prov['name']
+                        'province_id' => $prov['id'] ?? $prov['province_id'],
+                        'province' => $prov['name'] ?? $prov['province']
                     ];
                 }
             }
@@ -56,26 +53,9 @@ class CartController extends Controller
             $provinces = [];
         }
 
-        // JALUR BACKUP OTOMATIS VIA ONLINE API (Jika Server Komerce Sedang Down)
-        if (empty($provinces)) {
-            try {
-                $backupResponse = Http::get('https://raw.githubusercontent.com/edeandrea/indonesia-api/master/api/provinces.json');
-                $backupData = $backupResponse->json() ?? [];
-                foreach($backupData as $prov) {
-                    $provinces[] = [
-                        'province_id' => $prov['id'],
-                        'province' => $prov['name']
-                    ];
-                }
-            } catch (\Exception $e) {
-                $provinces = [];
-            }
-        }
-
         return view('shiping', compact('products', 'cart', 'totalPrice', 'totalWeight', 'provinces'));
     }
 
-    // 2. Switch Role Akun Fast
     public function switchRole(Request $request, $role)
     {
         if ($role == 'Admin') {
@@ -90,13 +70,13 @@ class CartController extends Controller
         return redirect('/')->with('success', 'Berhasil masuk sebagai ' . $role);
     }
 
-    // 3. Ambil Kota Menggunakan API Sandbox Komerce Berdasarkan Provinsi
     public function getCities($province_id)
     {
         $apiKey = env('RAJAONGKIR_API_KEY');
         $formattedCities = [];
 
         try {
+            // Ambil data kota dari Komerce
             $response = Http::timeout(5)->withHeaders([
                 'key' => $apiKey
             ])->get('https://api.komerce.id/site/v1/rajaongkir/city', [
@@ -107,8 +87,8 @@ class CartController extends Controller
                 $apiData = $response->json()['data'] ?? [];
                 foreach ($apiData as $city) {
                     $formattedCities[] = [
-                        'city_id' => $city['city_id'] ?? $city['id'],
-                        'city_name' => $city['city_name'] ?? $city['name'],
+                        'city_id' => $city['id'] ?? $city['city_id'],
+                        'city_name' => $city['name'] ?? $city['city_name'],
                         'type' => $city['type'] ?? ''
                     ];
                 }
@@ -116,30 +96,10 @@ class CartController extends Controller
         } catch (\Exception $e) {
             $formattedCities = [];
         }
-
-        // JALUR BACKUP KOTA ONLINE (Anti Gagal)
-        if (empty($formattedCities)) {
-            try {
-                $backupCityUrl = 'https://raw.githubusercontent.com/edeandrea/indonesia-api/master/api/regencies/' . $province_id . '.json';
-                $backupResponse = Http::get($backupCityUrl);
-                $backupData = $backupResponse->json() ?? [];
-                
-                foreach($backupData as $city) {
-                    $formattedCities[] = [
-                        'city_id' => $city['id'],
-                        'city_name' => $city['name'],
-                        'type' => ''
-                    ];
-                }
-            } catch (\Exception $e) {
-                $formattedCities = [];
-            }
-        }
         
         return response()->json($formattedCities);
     }
 
-    // 4. Tambah Item ke Keranjang Belanja
     public function addToCart(Request $request)
     {
         $cart = session('cart', []);
@@ -158,7 +118,6 @@ class CartController extends Controller
         return redirect('/')->with('success', 'Cookies dimasukkan ke keranjang!');
     }
 
-    // 5. Tombol Tambah Jumlah (➕)
     public function increaseQty($id)
     {
         $cart = session('cart', []);
@@ -169,7 +128,6 @@ class CartController extends Controller
         return redirect('/');
     }
 
-    // 6. Tombol Kurang Jumlah (➖)
     public function decreaseQty($id)
     {
         $cart = session('cart', []);
@@ -183,7 +141,6 @@ class CartController extends Controller
         return redirect('/');
     }
 
-    // 7. Menghapus Item dari Keranjang
     public function removeFromCart($id)
     {
         $cart = session('cart', []);
@@ -194,14 +151,12 @@ class CartController extends Controller
         return redirect('/');
     }
 
-    // 8. Mengosongkan Keranjang
     public function clearCart()
     {
         session()->forget('cart');
         return redirect('/');
     }
 
-    // 9. Hitung Ongkir Menggunakan API Sandbox Komerce
     public function checkout(Request $request)
     {
         $apiKey = env('RAJAONGKIR_API_KEY');
@@ -232,7 +187,6 @@ class CartController extends Controller
         }
     }
 
-    // 10. CRUD: Tambah Produk Baru
     public function storeProduct(Request $request)
     {
         $products = session('db_products', []);
@@ -245,7 +199,6 @@ class CartController extends Controller
         return redirect('/');
     }
 
-    // 11. CRUD: Hapus Produk dari Etalase
     public function deleteProduct($id)
     {
         $products = session('db_products', []);
