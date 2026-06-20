@@ -35,17 +35,16 @@ class CartController extends Controller
         $apiKey = env('RAJAONGKIR_API_KEY');
 
         try {
-            // Nembak ke Server Komerce
-            $response = Http::timeout(5)->withHeaders([
-                'key' => $apiKey
+            $response = Http::withoutVerifying()->withHeaders([
+                'key'=> $apiKey
             ])->get('https://api.komerce.id/site/v1/rajaongkir/province');
-            
+
             if ($response->successful()) {
                 $apiData = $response->json()['data'] ?? [];
                 foreach ($apiData as $prov) {
                     $provinces[] = [
                         'province_id' => $prov['id'] ?? $prov['province_id'],
-                        'province' => $prov['name'] ?? $prov['province']
+                        'province_name' => $prov['name'] ?? $prov['province']
                     ];
                 }
             }
