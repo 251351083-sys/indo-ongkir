@@ -92,7 +92,7 @@ class CartController extends Controller
             // Bypass aman
         }
 
-        return redirect()->back()->with('success', 'Data cookies berhasil disimpan!');
+        return redirect()->back()->with('success', 'Data cookies berhasil disimpan dan siap d jual!');
     }
 
     public function switchRole($role, Request $request)
