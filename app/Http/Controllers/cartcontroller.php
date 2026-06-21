@@ -13,7 +13,7 @@ class CartController extends Controller
         $provinces = [];
         $products = [];
 
-        // 1. DATA PRODUK (Disamakan menggunakan key ['name'] sesuai baris 173 file blade kamu)
+        // 1. DATA PRODUK
         try {
             $dbProducts = DB::table('products')->get();
             foreach ($dbProducts as $dbProd) {
@@ -30,7 +30,6 @@ class CartController extends Controller
             $products = [];
         }
 
-        // Jika database kosong, kita paksa isi 1 data array dengan key 'name' biar langsung tampil dan tidak eror
         if (empty($products)) {
             $products[] = [
                 'id'     => 1,
@@ -42,7 +41,7 @@ class CartController extends Controller
             ];
         }
 
-        // 2. KONEKSI ASLI RAJAONGKIR (KOMERCE) UNTUK PROVINSI
+        // 2. KONEKSI RAJAONGKIR (KOMERCE)
         try {
             $response = Http::withoutVerifying()
                 ->timeout(10)
@@ -56,7 +55,7 @@ class CartController extends Controller
                 foreach ($apiData as $prov) {
                     $provinces[] = [
                         'province_id' => $prov['id'] ?? '',
-                        'province'    => $prov['name'] ?? '',
+                        'province_name' => $prov['name'] ?? '', // Disamakan 'province_name' sesuai kebutuhan file blade
                     ];
                 }
             }
@@ -64,7 +63,17 @@ class CartController extends Controller
             $provinces = [];
         }
 
-        return view('shiping', compact('provinces', 'products'));
+        // Ambil data keranjang, total harga, dan total berat dari session untuk dikirim ke view
+        $cart = session()->get('cart', []);
+        $totalPrice = 0;
+        $totalWeight = 0;
+
+        foreach ($cart as $item) {
+            $totalPrice += ($item['price'] ?? 0) * ($item['qty'] ?? 1);
+            $totalWeight += ($item['weight'] ?? 0) * ($item['qty'] ?? 1);
+        }
+
+        return view('shiping', compact('provinces', 'products', 'cart', 'totalPrice', 'totalWeight'));
     }
 
     public function storeProduct(Request $request)
@@ -90,5 +99,36 @@ class CartController extends Controller
     {
         session(['user_role' => $role]);
         return redirect()->to('/');
+    }
+
+    // ==========================================
+    // TAMBAHKAN FUNGSI BARU DI BAWAH INI
+    // ==========================================
+    
+    public function addToCart(Request $request)
+    {
+        $cart = session()->get('cart', []);
+        $id = $request->id;
+
+        if (isset($cart[$id])) {
+            $cart[$id]['qty']++;
+        } else {
+            $cart[$id] = [
+                "id"     => $request->id,
+                "name"   => $request->name,
+                "qty"    => 1,
+                "price"  => $request->price ?? $request->harga ?? 0,
+                "weight" => $request->weight ?? 0
+            ];
+        }
+
+        session()->put('cart', $cart);
+        return redirect()->back()->with('success', 'Cookies berhasil dimasukkan ke keranjang!');
+    }
+
+    public function clear()
+    {
+        session()->forget('cart');
+        return redirect()->back()->with('success', 'Keranjang belanja berhasil dikosongkan.');
     }
 }

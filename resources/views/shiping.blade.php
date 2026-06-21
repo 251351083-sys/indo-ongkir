@@ -11,11 +11,10 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             padding-bottom: 90px;
         }
-        .navbar-top { background: linear-gradient(135deg, #8B4513, #D2691E); } /* Tema Cokelat Cookies */
+        .navbar-top { background: linear-gradient(135deg, #8B4513, #D2691E); }
         .card-custom { border: none; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.04); background-color: #ffffff; }
         .product-img { height: 160px; object-fit: cover; border-radius: 8px; }
         
-        /* NAV BAR POJOK KANAN ATAS (ONLY ICON) */
         .cart-header-icon-btn {
             position: relative;
             background: rgba(255, 255, 255, 0.2);
@@ -41,12 +40,10 @@
             border: 1px solid #8B4513;
         }
 
-        /* STATUS ORDER TAB BERJEJER */
         .shopee-tabs { display: flex; border-bottom: 2px solid #e8e8e8; margin-bottom: 20px; background: #fff; border-radius: 8px; overflow: hidden; }
         .shopee-tab-item { flex: 1; text-align: center; padding: 12px 5px; font-size: 14px; color: #555; cursor: pointer; font-weight: 500; border-bottom: 3px solid transparent; }
         .shopee-tab-item.active { color: #8B4513; border-bottom-color: #8B4513; font-weight: bold; }
 
-        /* DESIGN BOTTOM NAVIGATION BAR */
         .bottom-nav {
             position: fixed; bottom: 0; left: 0; right: 0; height: 65px;
             background-color: #ffffff; box-shadow: 0 -3px 12px rgba(0, 0, 0, 0.06);
@@ -114,11 +111,12 @@
 
         @if(session('success'))
             <div class="alert alert-success alert-dismissible fade show rounded-3 small shadow-sm" role="alert">
-                  {{ session('success') }}
+                 {{ session('success') }}
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         @endif
 
+        <!-- TAB BERANDA -->
         <div class="custom-tab-content active" id="konten-beranda">
             
             @if(session('user_role') == 'Admin')
@@ -134,7 +132,7 @@
                         </div>
                         <div class="col-md-2">
                             <label class="form-label small fw-semibold text-muted mb-1">Harga (Rp)</label>
-                            <input type="number" class="form-control form-control-sm" name="price" placeholder="65000" required>
+                            <input type="number" class="form-control form-control-sm" name="harga" placeholder="65000" required>
                         </div>
                         <div class="col-md-2">
                             <label class="form-label small fw-semibold text-muted mb-1">Stok Jar</label>
@@ -164,27 +162,31 @@
                             <div class="card h-100 border p-2 position-relative shadow-none">
                                 
                                 @if(session('user_role') == 'Admin')
-                                    <a href="{{ url('/product/delete/'.$p['id']) }}" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-2 rounded-circle shadow-sm" style="padding: 2px 8px; font-size: 11px;" title="Hapus Produk dari Toko" onclick="return confirm('Yakin ingin menghapus produk ini?')">✕</a>
+                                    <a href="{{ url('/product/delete/'.$p['id']) }}" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-2 rounded-circle shadow-sm" style="padding: 2px 8px; font-size: 11px;" title="Hapus Produk" onclick="return confirm('Yakin ingin menghapus produk ini?')">✕</a>
                                 @endif
 
                                 <img src="{{ $p['img'] ?? 'https://images.unsplash.com/photo-1499636136210-6f4ce91a094f?w=300' }}" class="card-img-top product-img">
+                                
                                 <div class="card-body p-2 d-flex flex-column justify-content-between">
                                     <div>
                                         <div class="fw-bold text-dark text-truncate mb-1" style="font-size:14px;">{{ $p['name'] }}</div>
-                                        <div class="text-success fw-bold small mb-1">Rp {{ number_format($p['price'], 0, ',', '.') }}</div>
+                                        <div class="text-success fw-bold small mb-1">Rp {{ number_format($p['harga'], 0, ',', '.') }}</div>
                                         <div class="d-flex justify-content-between text-muted" style="font-size: 11px;">
                                             <span>Stok: <b>{{ $p['stock'] ?? 10 }}</b></span>
                                             <span>{{ $p['weight'] }} gr</span>
                                         </div>
                                     </div>
+                                    
                                     <form action="{{ route('cart.add') }}" method="POST" class="mt-2"> @csrf
                                         <input type="hidden" name="id" value="{{ $p['id'] }}">
                                         <input type="hidden" name="name" value="{{ $p['name'] }}">
-                                        <input type="hidden" name="price" value="{{ $p['price'] }}">
+                                        <input type="hidden" name="price" value="{{ $p['harga'] }}">
+                                        <input type="hidden" name="harga" value="{{ $p['harga'] }}">
                                         <input type="hidden" name="weight" value="{{ $p['weight'] }}">
                                         <button class="btn btn-outline-warning text-dark w-100 btn-sm fw-bold" style="font-size: 11px; background-color: #fff8ee;">+ Keranjang</button>
                                     </form>
                                 </div>
+
                             </div>
                         </div>
                         @endforeach
@@ -193,6 +195,7 @@
             </div>
         </div>
 
+        <!-- TAB PENGIRIMAN -->
         <div class="custom-tab-content" id="konten-pengiriman">
             <div class="row">
                 <div class="col-lg-5 mb-4">
@@ -205,13 +208,11 @@
                         @if(isset($cart) && count($cart) > 0)
                             <div class="p-2 border rounded bg-light mb-3" style="max-height: 280px; overflow-y:auto;">
                                 @foreach($cart as $key => $c)
-                                    @php 
-                                        $idItem = (isset($c['id']) && $c['id'] != '') ? $c['id'] : $key; 
-                                    @endphp
+                                    @php $idItem = $c['id'] ?? $key; @endphp
                                     <div class="d-flex justify-content-between align-items-center small mb-2 border-bottom pb-2">
                                         <div class="text-truncate" style="max-width: 150px;">
-                                            <div class="fw-bold text-dark text-truncate">{{ $c['name'] ?? 'Cookies Premium' }}</div>
-                                            <small class="text-muted">Rp {{ number_format($c['price'] ?? 0, 0, ',', '.') }}</small>
+                                            <div class="fw-bold text-dark text-truncate">{{ $c['name'] ?? 'Cookies' }}</div>
+                                            <small class="text-muted">Rp {{ number_format($c['price'] ?? $c['harga'] ?? 0, 0, ',', '.') }}</small>
                                         </div>
                                         
                                         <div class="d-flex align-items-center">
@@ -220,12 +221,8 @@
                                                 <span class="btn btn-light px-2 py-0 disabled fw-bold text-dark" style="font-size:12px;">{{ $c['qty'] ?? 1 }}</span>
                                                 <a href="{{ url('/cart/increase/'.$idItem) }}" class="btn btn-outline-secondary px-2 py-0 fw-bold" style="font-size:10px;">➕</a>
                                             </div>
-                                            
-                                            <span class="fw-bold text-dark me-2 small">Rp {{ number_format(($c['price'] ?? 0) * ($c['qty'] ?? 1), 0, ',', '.') }}</span>
-                                            
-                                            <a href="{{ url('/cart/delete/'.$idItem) }}" class="btn btn-sm btn-link text-danger p-0" title="Hapus total produk ini" style="font-size: 15px; text-decoration: none;">
-                                                🗑️
-                                            </a>
+                                            <span class="fw-bold text-dark me-2 small">Rp {{ number_format(($c['price'] ?? $c['harga'] ?? 0) * ($c['qty'] ?? 1), 0, ',', '.') }}</span>
+                                            <a href="{{ url('/cart/delete/'.$idItem) }}" class="btn btn-sm btn-link text-danger p-0" style="font-size: 15px; text-decoration: none;">🗑️</a>
                                         </div>
                                     </div>
                                 @endforeach
@@ -239,9 +236,7 @@
                                 <span class="fw-bold text-danger fs-5">Rp {{ number_format($totalPrice ?? 0, 0, ',', '.') }}</span>
                             </div>
                         @else
-                            <div class="text-center py-5 text-muted small">
-                                Keranjang kue kosong. Pilih varian cookies lezat di tab Beranda.
-                            </div>
+                            <div class="text-center py-5 text-muted small">Keranjang kue kosong.</div>
                         @endif
                     </div>
                 </div>
@@ -256,13 +251,13 @@
                             <div class="row g-3">
                                 <div class="col-md-6">
                                     <label class="form-label small fw-semibold">Pilih Provinsi</label>
-                                    <select class="form-select form-select-md" name="province_id" id="province_id">
-                                     <option value="">-- Provinsi --</option>
+                                    <select class="form-select form-select-sm" name="province_id" id="province_id">
+                                        <option value="">-- Provinsi --</option>
                                         @if(isset($provinces))
-                                        @foreach($provinces as $pr)
-                                         <option value="{{ $pr['province_id'] }}">{{ $pr['province_name'] }}</option>
-                                             @endforeach
-                                      @endif
+                                            @foreach($provinces as $pr)
+                                                <option value="{{ $pr['province_id'] }}">{{ $pr['province_name'] }}</option>
+                                            @endforeach
+                                        @endif
                                     </select>
                                 </div>
                                 <div class="col-md-6">
@@ -272,7 +267,7 @@
                                     </select>
                                 </div>
                                 <div class="col-12">
-                                    <label class="form-label small fw-semibold text-secondary">Kurir Ekspedisi Pengiriman</label>
+                                    <label class="form-label small fw-semibold text-secondary">Kurir Ekspedisi</label>
                                     <select class="form-select form-select-sm" name="courier" required>
                                         <option value="jne">JNE Express</option>
                                         <option value="pos">POS Indonesia</option>
@@ -280,15 +275,14 @@
                                     </select>
                                 </div>
                             </div>
-                            <button class="btn btn-success w-100 btn-sm fw-bold mt-4 py-2 shadow-sm" @if(($totalWeight ?? 0) == 0) disabled @endif>
-                                Hitung Ongkir Logistik Kue
-                            </button>
+                            <button class="btn btn-success w-100 btn-sm fw-bold mt-4 py-2" @if(($totalWeight ?? 0) == 0) disabled @endif>Hitung Ongkir</button>
                         </form>
                     </div>
                 </div>
             </div>
         </div>
 
+        <!-- TAB STATUS TRANSAKSI -->
         <div class="custom-tab-content" id="konten-status">
             <div class="shopee-tabs">
                 <div class="shopee-tab-item active" id="subtab-belum" onclick="switchSubTab('belum')">Belum Bayar</div>
@@ -319,14 +313,9 @@
                                 <span class="text-danger">Rp {{ number_format(($totalPrice ?? 0) + session('results')[0]['cost'], 0, ',', '.') }}</span>
                             </div>
                         </div>
-                        
-                        <a href="{{ url('/print-invoice?pdf=true') }}" target="_blank" class="btn btn-sm w-100 fw-bold text-white py-2" style="background-color: #8B4513;">
-                            Cetak & Ekspor Resi Invoice Cookies (PDF)
-                        </a>
+                        <a href="{{ url('/print-invoice?pdf=true') }}" target="_blank" class="btn btn-sm w-100 fw-bold text-white py-2" style="background-color: #8B4513;">Cetak Resi Invoice (PDF)</a>
                     @else
-                        <div class="text-center py-4 text-muted small">
-                            Belum ada kalkulasi ongkir aktif. Silakan lakukan hitung ongkir di tab <b>"Pilih Pengiriman"</b> terlebih dahulu.
-                        </div>
+                        <div class="text-center py-4 text-muted small">Belum ada kalkulasi ongkir aktif.</div>
                     @endif
                 </div>
             </div>
@@ -334,30 +323,26 @@
 
     </div>
 
+    <!-- NAVIGATION BOTTOM -->
     <div class="bottom-nav">
         <button class="bottom-nav-item active" id="btn-nav-beranda" onclick="pindahTab('beranda')">
-            <span class="bottom-nav-icon">🏠</span>
-            <span>Beranda</span>
+            <span class="bottom-nav-icon">🏠</span><span>Beranda</span>
         </button>
         <button class="bottom-nav-item" id="btn-nav-pengiriman" onclick="pindahTab('pengiriman')">
-            <span class="bottom-nav-icon">🚚</span>
-            <span>Pilih Pengiriman</span>
+            <span class="bottom-nav-icon">🚚</span><span>Pilih Pengiriman</span>
         </button>
         <button class="bottom-nav-item" id="btn-nav-status" onclick="pindahTab('status')">
-            <span class="bottom-nav-icon">📦</span>
-            <span>Status Transaksi</span>
+            <span class="bottom-nav-icon">📦</span><span>Status Transaksi</span>
         </button>
     </div>
 
     <script>
-        // Fungsi Pop-Up Keamanan Password Akun Admin Owner
         function mintaPasswordAdmin() {
-            let pass = prompt(" Sistem Keamanan Indo-Ongkir:\nMasukkan password otentikasi Admin Owner:");
+            let pass = prompt("Sistem Keamanan Indo-Ongkir:\nMasukkan password otentikasi Admin Owner:");
             if (pass != null) {
                 if (pass === "") {
                     alert("Password tidak boleh kosong!");
                 } else {
-                    // Redirect otomatis ke controller dengan membawa parameter query string password
                     window.location.href = "{{ url('/switch-role/Admin') }}?password=" + encodeURIComponent(pass);
                 }
             }
@@ -367,11 +352,9 @@
             document.getElementById('btn-nav-beranda').classList.remove('active');
             document.getElementById('btn-nav-pengiriman').classList.remove('active');
             document.getElementById('btn-nav-status').classList.remove('active');
-
             document.getElementById('konten-beranda').classList.remove('active');
             document.getElementById('konten-pengiriman').classList.remove('active');
             document.getElementById('konten-status').classList.remove('active');
-
             document.getElementById('btn-nav-' + target).classList.add('active');
             document.getElementById('konten-' + target).classList.add('active');
         }
@@ -380,20 +363,6 @@
             e.preventDefault();
             pindahTab('pengiriman');
         });
-
-        function switchSubTab(sub) {
-            document.getElementById('subtab-belum').classList.remove('active');
-            document.getElementById('subtab-kirim').classList.remove('active');
-            document.getElementById('subtab-selesai').classList.remove('active');
-            document.getElementById('subtab-' + sub).classList.add('active');
-
-            let area = document.getElementById('subtab-content-area');
-            if(sub === 'kirim' || sub === 'selesai') {
-                area.innerHTML = `<div class="text-center py-4 text-muted small">Riwayat pengantaran pesanan cookies status [${sub.toUpperCase()}] masih kosong.</div>`;
-            } else {
-                window.location.reload();
-            }
-        }
 
         document.getElementById('province_id').addEventListener('change', function() {
             let citySelect = document.getElementById('city');
@@ -406,11 +375,11 @@
                     let html = '<option value="">-- Pilih Kota Tujuan --</option>';
                     data.forEach(c => { html += `<option value="${c.city_id}">${c.city_name}</option>`; });
                     citySelect.innerHTML = html;
-                });
+                })
+                .catch(err => { citySelect.innerHTML = '<option value="">Gagal memuat data kota</option>'; });
         });
 
-        let cekHasil = "{{ session('results') ? 'true' : 'false' }}";
-        if (cekHasil === 'true') {
+        if ("{{ session('results') ? 'true' : 'false' }}" === 'true') {
             pindahTab('status');
         }
     </script>
