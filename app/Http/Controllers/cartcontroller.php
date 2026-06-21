@@ -13,7 +13,7 @@ class CartController extends Controller
         $provinces = [];
         $products = [];
 
-        // 1. DATA PRODUK
+        // 1. DATA PRODUk 
         try {
             $dbProducts = DB::table('products')->get();
             foreach ($dbProducts as $dbProd) {
