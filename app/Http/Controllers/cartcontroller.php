@@ -13,7 +13,7 @@ class CartController extends Controller
         $provinces = [];
         $products = [];
 
-        // 1. DATA PRODUk 
+        // 1. DATA PRODUK
         try {
             $dbProducts = DB::table('products')->get();
             foreach ($dbProducts as $dbProd) {
@@ -40,30 +40,29 @@ class CartController extends Controller
                 'img'    => 'https://noonchiinsight.com/wp-content/uploads/2026/01/download-1-1.jpg',
             ];
         }
-
-        // 2. KONEKSI RAJAONGKIR (KOMERCE)
+ 
         try {
-            $response = Http::withoutVerifying()
-                ->timeout(10)
-                ->withHeaders([
-                    'Authorization' => 'Bearer OuclSMU9dd39c571326fee77LLRBmBTe',
-                    'Accept'        => 'application/json',
-                ])->get('https://api.komerce.id/site/v1/rajaongkir/province');
+    $response = Http::withoutVerifying()
+        ->timeout(10)
+        ->withHeaders([
             
-            if ($response->successful() && isset($response->json()['data'])) {
-                $apiData = $response->json()['data'];
-                foreach ($apiData as $prov) {
-                    $provinces[] = [
-                        'province_id' => $prov['id'] ?? '',
-                        'province_name' => $prov['name'] ?? '', // Disamakan 'province_name' sesuai kebutuhan file blade
-                    ];
-                }
-            }
-        } catch (\Exception $e) {
-            $provinces = [];
-        }
+            'key' => 'OuclSMU9dd39c571326fee77LLRBmBTe', 
+            'Accept' => 'application/json',
+        ])->get('https://api.rajaongkir.com/starter/province'); 
 
-        // Ambil data keranjang, total harga, dan total berat dari session untuk dikirim ke view
+    $resJson = $response->json();
+    $apiData = $resJson['rajaongkir']['results'] ?? [];
+    
+    foreach ($apiData as $prov) {
+        $provinces[] = [
+            'province_id'   => $prov['province_id'] ?? '',
+            'province_name' => $prov['province'] ?? '', 
+        ];
+    }
+} catch (\Exception $e) {
+    $provinces = [];
+}
+
         $cart = session()->get('cart', []);
         $totalPrice = 0;
         $totalWeight = 0;
@@ -74,6 +73,48 @@ class CartController extends Controller
         }
 
         return view('shiping', compact('provinces', 'products', 'cart', 'totalPrice', 'totalWeight'));
+    }
+
+    public function getCities($province_id)
+    {
+        try {
+            
+            $response = Http::withoutVerifying()->withHeaders([
+            'key' => 'OuclSMU9dd39c571326fee77LLRBmBTe'
+            ])->get("https://api.rajaongkir.com/starter/city?province={$province_id}");
+
+            $cities = $response->json()['rajaongkir']['results'] ?? [];
+            
+            $formattedCities = array_map(function($city) {
+                return [
+                    'city_id'   => $city['id'] ?? '',
+                    'city_name' => $city['name'] ?? '',
+                    'type'      => $city['type'] ?? ''
+                ];
+            }, $cities);
+
+            return response()->json($formattedCities);
+        } catch (\Exception $e) {
+            return response()->json([]);
+        }
+    }
+
+    public function checkCost(Request $request)
+    {
+        try {
+            $response = Http::withoutVerifying()->withHeaders([
+                'key' => 'OuclSMU9dd39c571326fee77LLRBmBTe'
+            ])->post('https://api.komerce.id/site/v1/rajaongkir/cost', [
+                'origin'        => 411, 
+                'destination'   => $request->destination,
+                'weight'        => $request->weight ?? 300,
+                'courier'       => $request->courier ?? 'jne'
+            ]);
+
+            return response()->json($response->json()['data'] ?? []);
+        } catch (\Exception $e) {
+            return response()->json([]);
+        }
     }
 
     public function storeProduct(Request $request)
@@ -89,10 +130,10 @@ class CartController extends Controller
                 'updated_at'  => now(),
             ]);
         } catch (\Exception $e) {
-            // Bypass aman
+            
         }
 
-        return redirect()->back()->with('success', 'Data cookies berhasil disimpan dan siap d jual!');
+        return redirect()->back()->with('success', 'Data cookies berhasil disimpan dan siap dijual!');
     }
 
     public function switchRole($role, Request $request)
@@ -100,10 +141,6 @@ class CartController extends Controller
         session(['user_role' => $role]);
         return redirect()->to('/');
     }
-
-    // ==========================================
-    // TAMBAHKAN FUNGSI BARU DI BAWAH INI
-    // ==========================================
     
     public function addToCart(Request $request)
     {
