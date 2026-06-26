@@ -116,7 +116,6 @@
             </div>
         @endif
 
-        <!-- TAB BERANDA -->
         <div class="custom-tab-content active" id="konten-beranda">
             
             @if(session('user_role') == 'Admin')
@@ -195,7 +194,6 @@
             </div>
         </div>
 
-        <!-- TAB PENGIRIMAN -->
         <div class="custom-tab-content" id="konten-pengiriman">
             <div class="row">
                 <div class="col-lg-5 mb-4">
@@ -246,142 +244,3 @@
                         <h5 class="fw-bold text-success mb-3">Penghitung Ongkos Kirim Otomatis</h5>
                         <form action="{{ route('checkout') }}" method="POST"> @csrf
                             <input type="hidden" name="total_price" value="{{ $totalPrice ?? 0 }}">
-                            <input type="hidden" name="weight" value="{{ $totalWeight ?? 0 }}">
-                            
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <label class="form-label small fw-semibold">Pilih Provinsi</label>
-                                    <select class="form-select form-select-sm" name="province_id" id="province_id">
-                                        <option value="">-- Provinsi --</option>
-                                        @if(isset($provinces))
-                                            @foreach($provinces as $pr)
-                                                <option value="{{ $pr['province_id'] }}">{{ $pr['province_name'] }}</option>
-                                            @endforeach
-                                        @endif
-                                    </select>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label small fw-semibold text-secondary">Pilih Kota Tujuan</label>
-                                    <select class="form-select form-select-sm" name="city_id" id="city" required>
-                                        <option value="">-- Kota --</option>
-                                    </select>
-                                </div>
-                                <div class="col-12">
-                                    <label class="form-label small fw-semibold text-secondary">Kurir Ekspedisi</label>
-                                    <select class="form-select form-select-sm" name="courier" required>
-                                        <option value="jne">JNE Express</option>
-                                        <option value="pos">POS Indonesia</option>
-                                        <option value="tiki">TIKI Logistik</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <button class="btn btn-success w-100 btn-sm fw-bold mt-4 py-2" @if(($totalWeight ?? 0) == 0) disabled @endif>Hitung Ongkir</button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- TAB STATUS TRANSAKSI -->
-        <div class="custom-tab-content" id="konten-status">
-            <div class="shopee-tabs">
-                <div class="shopee-tab-item active" id="subtab-belum" onclick="switchSubTab('belum')">Belum Bayar</div>
-                <div class="shopee-tab-item" id="subtab-kirim" onclick="switchSubTab('kirim')">Dikirim</div>
-                <div class="shopee-tab-item" id="subtab-selesai" onclick="switchSubTab('selesai')">Selesai</div>
-            </div>
-
-            <div class="card card-custom p-4">
-                <div id="subtab-content-area">
-                    <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
-                        <span class="small text-muted">No. Invoice: <b>CK-INV/2026/0045</b></span>
-                        <span class="text-danger fw-bold small">BELUM BAYAR</span>
-                    </div>
-                    
-                    @if(session('results'))
-                        <div class="p-3 bg-light rounded mb-3">
-                            <h6 class="fw-bold text-dark mb-1">Rincian Perhitungan Pembayaran Cookies:</h6>
-                            <div class="d-flex justify-content-between small text-muted">
-                                <span>Subtotal Cookies:</span>
-                                <span>Rp {{ number_format($totalPrice ?? 0, 0, ',', '.') }}</span>
-                            </div>
-                            <div class="d-flex justify-content-between small text-muted mb-2">
-                                <span>Biaya Ongkos Kirim:</span>
-                                <span>Rp {{ number_format(session('results')[0]['cost'], 0, ',', '.') }}</span>
-                            </div>
-                            <div class="d-flex justify-content-between fw-bold text-dark border-top pt-2">
-                                <span>Total Tagihan Akhir:</span>
-                                <span class="text-danger">Rp {{ number_format(($totalPrice ?? 0) + session('results')[0]['cost'], 0, ',', '.') }}</span>
-                            </div>
-                        </div>
-                        <a href="{{ url('/print-invoice?pdf=true') }}" target="_blank" class="btn btn-sm w-100 fw-bold text-white py-2" style="background-color: #8B4513;">Cetak Resi Invoice (PDF)</a>
-                    @else
-                        <div class="text-center py-4 text-muted small">Belum ada kalkulasi ongkir aktif.</div>
-                    @endif
-                </div>
-            </div>
-        </div>
-
-    </div>
-
-    <!-- NAVIGATION BOTTOM -->
-    <div class="bottom-nav">
-        <button class="bottom-nav-item active" id="btn-nav-beranda" onclick="pindahTab('beranda')">
-            <span class="bottom-nav-icon">🏠</span><span>Beranda</span>
-        </button>
-        <button class="bottom-nav-item" id="btn-nav-pengiriman" onclick="pindahTab('pengiriman')">
-            <span class="bottom-nav-icon">🚚</span><span>Pilih Pengiriman</span>
-        </button>
-        <button class="bottom-nav-item" id="btn-nav-status" onclick="pindahTab('status')">
-            <span class="bottom-nav-icon">📦</span><span>Status Transaksi</span>
-        </button>
-    </div>
-
-    <script>
-        function mintaPasswordAdmin() {
-            let pass = prompt("Sistem Keamanan Indo-Ongkir:\nMasukkan password otentikasi Admin Owner:");
-            if (pass != null) {
-                if (pass === "") {
-                    alert("Password tidak boleh kosong!");
-                } else {
-                    window.location.href = "{{ url('/switch-role/Admin') }}?password=" + encodeURIComponent(pass);
-                }
-            }
-        }
-
-        function pindahTab(target) {
-            document.getElementById('btn-nav-beranda').classList.remove('active');
-            document.getElementById('btn-nav-pengiriman').classList.remove('active');
-            document.getElementById('btn-nav-status').classList.remove('active');
-            document.getElementById('konten-beranda').classList.remove('active');
-            document.getElementById('konten-pengiriman').classList.remove('active');
-            document.getElementById('konten-status').classList.remove('active');
-            document.getElementById('btn-nav-' + target).classList.add('active');
-            document.getElementById('konten-' + target).classList.add('active');
-        }
-
-        document.getElementById('btn-keranjang-atas').addEventListener('click', function(e) {
-            e.preventDefault();
-            pindahTab('pengiriman');
-        });
-
-        document.getElementById('province_id').addEventListener('change', function() {
-            let citySelect = document.getElementById('city');
-            citySelect.innerHTML = '<option value="">Memuat data kota...</option>';
-            if (!this.value) return;
-
-            fetch('/get-cities/' + this.value)
-                .then(res => res.json())
-                .then(data => {
-                    let html = '<option value="">-- Pilih Kota Tujuan --</option>';
-                    data.forEach(c => { html += `<option value="${c.city_id}">${c.city_name}</option>`; });
-                    citySelect.innerHTML = html;
-                })
-                .catch(err => { citySelect.innerHTML = '<option value="">Gagal memuat data kota</option>'; });
-        });
-
-        if ("{{ session('results') ? 'true' : 'false' }}" === 'true') {
-            pindahTab('status');
-        }
-    </script>
-</body>
-</html>
