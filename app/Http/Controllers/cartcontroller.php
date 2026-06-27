@@ -4,20 +4,18 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class CartController extends Controller
 {
-    public function index()
+    private function getProducts()
     {
-        $provinces = [];
-        $products = [];
-
         try {
             $dbProducts = DB::table('products')->get();
+            $products = [];
             foreach ($dbProducts as $dbProd) {
                 $products[] = [
-                    'id'     => $dbProd->id ?? 1,
+                    'id'     => $dbProd->id,
                     'name'   => $dbProd->nama_varian ?? $dbProd->nama_produk ?? $dbProd->name ?? 'Premium Dubai Pistachio Cookies',
                     'harga'  => $dbProd->harga ?? 65000,
                     'stock'  => $dbProd->stok ?? $dbProd->stock ?? 20,
@@ -25,94 +23,88 @@ class CartController extends Controller
                     'img'    => $dbProd->url_foto ?? $dbProd->img ?? 'https://noonchiinsight.com/wp-content/uploads/2026/01/download-1-1.jpg',
                 ];
             }
+            return !empty($products) ? $products : $this->defaultProducts();
         } catch (\Exception $e) {
-            $products = [];
+            Log::error('Gagal ambil produk: ' . $e->getMessage());
+            return $this->defaultProducts();
         }
+    }
 
-        if (empty($products)) {
-            $products[] = [
-                'id'     => 1,
-                'name'   => 'Premium Dubai Pistachio Cookies',
-                'harga'  => 65000,
-                'stock'  => 20,
-                'weight' => 300,
-                'img'    => 'https://noonchiinsight.com/wp-content/uploads/2026/01/download-1-1.jpg',
-            ];
-        }
+    private function defaultProducts()
+    {
+        return [[
+            'id'     => 1,
+            'name'   => 'Premium Dubai Pistachio Cookies',
+            'harga'  => 65000,
+            'stock'  => 20,
+            'weight' => 300,
+            'img'    => 'https://noonchiinsight.com/wp-content/uploads/2026/01/download-1-1.jpg',
+        ]];
+    }
 
-        try {
-            $response = Http::withoutVerifying()
-                ->timeout(10)
-                ->withHeaders([
-                    'key'    => 'M2PIOplPdfed907618ac602fenhpQHlp', 
-                    'Accept' => 'application/json',
-                ])->get('https://api.rajaongkir.com/starter/province');
-            
-            $resJson = $response->json();
-            $apiData = $resJson['rajaongkir']['results'] ?? [];
-            
-            foreach ($apiData as $prov) {
-                $provinces[] = [
-                    'province_id'   => $prov['province_id'] ?? '',
-                    'province_name' => $prov['province'] ?? '', 
-                ];
-            }
-        } catch (\Exception $e) {
-            \Log::error("Gagal mengambil provinsi: " . $e->getMessage());
-            $provinces = [];
+    public function add(Request $request)
+    {
+        $products = $this->getProducts();
+        $product  = collect($products)->firstWhere('id', $request->product_id);
+
+        if (!$product) {
+            return redirect()->back()->with('error', 'Produk tidak ditemukan.');
         }
 
         $cart = session()->get('cart', []);
-        $totalPrice = 0;
-        $totalWeight = 0;
+        $id   = $request->product_id;
 
-        foreach ($cart as $item) {
-            $totalPrice += ($item['price'] ?? 0) * ($item['qty'] ?? 1);
-            $totalWeight += ($item['weight'] ?? 0) * ($item['qty'] ?? 1);
+        if (isset($cart[$id])) {
+            $cart[$id]['qty']++;
+        } else {
+            $cart[$id] = [
+                'name'   => $product['name'],
+                'price'  => $product['harga'],
+                'weight' => $product['weight'],
+                'img'    => $product['img'],
+                'qty'    => 1,
+            ];
         }
 
-        return view('shiping', compact('provinces', 'products', 'cart', 'totalPrice', 'totalWeight'));
+        session()->put('cart', $cart);
+        return redirect()->back()->with('success', 'Produk ditambahkan ke keranjang.');
     }
 
-    public function getCities($province_id)
+    public function increase($id)
     {
-        try {
-            $response = Http::withoutVerifying()->withHeaders([
-                'key' => 'M2PIOplPdfed907618ac602fenhpQHlp'
-            ])->get("https://api.rajaongkir.com/starter/city?province={$province_id}");
-
-            $cities = $response->json()['rajaongkir']['results'] ?? [];
-            
-            $formattedCities = array_map(function($city) {
-                return [
-                    'city_id'   => $city['city_id'] ?? '',
-                    'city_name' => ($city['type'] ?? '') . ' ' . ($city['city_name'] ?? ''),
-                    'type'      => $city['type'] ?? ''
-                ];
-            }, $cities);
-
-            return response()->json($formattedCities);
-        } catch (\Exception $e) {
-            return response()->json([]);
+        $cart = session()->get('cart', []);
+        if (isset($cart[$id])) {
+            $cart[$id]['qty']++;
         }
+        session()->put('cart', $cart);
+        return redirect()->back();
     }
 
-    public function checkCost(Request $request)
+    public function decrease($id)
     {
-        try {
-            $response = Http::withoutVerifying()->withHeaders([
-                'key' => 'M2PIOplPdfed907618ac602fenhpQHlp'
-            ])->post('https://api.rajaongkir.com/starter/cost', [
-                'origin'      => 411, // Purwakarta
-                'destination' => $request->destination,
-                'weight'      => $request->weight ?? 300,
-                'courier'     => strtolower($request->courier ?? 'jne')
-            ]);
-
-            $costs = $response->json()['rajaongkir']['results'] ?? [];
-            return response()->json($costs);
-        } catch (\Exception $e) {
-            return response()->json([]);
+        $cart = session()->get('cart', []);
+        if (isset($cart[$id])) {
+            if ($cart[$id]['qty'] > 1) {
+                $cart[$id]['qty']--;
+            } else {
+                unset($cart[$id]);
+            }
         }
+        session()->put('cart', $cart);
+        return redirect()->back();
+    }
+
+    public function remove($id)
+    {
+        $cart = session()->get('cart', []);
+        unset($cart[$id]);
+        session()->put('cart', $cart);
+        return redirect()->back()->with('success', 'Produk dihapus dari keranjang.');
+    }
+
+    public function clear()
+    {
+        session()->forget('cart');
+        return redirect()->back()->with('success', 'Keranjang berhasil dikosongkan.');
     }
 }
