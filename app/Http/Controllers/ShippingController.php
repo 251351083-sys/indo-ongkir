@@ -14,7 +14,6 @@ class ShippingController extends Controller
         $provinces = [];
         $products  = [];
 
-        // Ambil produk dari DB
         try {
             $dbProducts = DB::table('products')->get();
             foreach ($dbProducts as $dbProd) {
@@ -42,12 +41,11 @@ class ShippingController extends Controller
             ];
         }
 
-        // Ambil provinsi dari Komerce
         try {
             $response = Http::withoutVerifying()
                 ->timeout(10)
                 ->withHeaders(['key' => env('KOMERCE_KEY')])
-                ->get(env('KOMERCE_BASE_URL') . '/province');
+                ->get(env('KOMERCE_BASE_URL') . '/destination/province');
 
             $apiData = $response->json()['data'] ?? [];
 
@@ -78,7 +76,7 @@ class ShippingController extends Controller
         try {
             $response = Http::withoutVerifying()
                 ->withHeaders(['key' => env('KOMERCE_KEY')])
-                ->get(env('KOMERCE_BASE_URL') . "/city?province={$province_id}");
+                ->get(env('KOMERCE_BASE_URL') . "/destination/city?province_id={$province_id}");
 
             $cities = array_map(function ($city) {
                 return [
@@ -99,7 +97,7 @@ class ShippingController extends Controller
         try {
             $response = Http::withoutVerifying()
                 ->withHeaders(['key' => env('KOMERCE_KEY')])
-                ->post(env('KOMERCE_BASE_URL') . '/cost', [
+                ->post(env('KOMERCE_BASE_URL') . '/calculate/domestic-cost', [
                     'origin'      => env('ORIGIN_CITY_ID', 411),
                     'destination' => $request->destination,
                     'weight'      => $request->weight ?? 300,

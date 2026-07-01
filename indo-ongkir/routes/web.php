@@ -3,8 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\ShippingController;
+use App\Http\Controllers\ProfileController;
 
-// Rute Dashboard bawaan Laravel Breeze (Biar gak eror saat login/register)
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
@@ -14,6 +14,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/', function () {
         return redirect()->route('shipping.index');
     });
+
+    Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     Route::get('/shipping', [ShippingController::class, 'index'])->name('shipping.index');
 
@@ -33,5 +37,4 @@ Route::middleware('auth')->group(function () {
 
 });
 
-// PENTING: Pastikan baris ini ada di paling bawah luar group middleware
 require __DIR__.'/auth.php';
