@@ -31,14 +31,65 @@ class ShippingController extends Controller
             Log::error('Gagal ambil produk: ' . $e->getMessage());
         }
 
+        // 🌟 JIKA DATABASE KOSONG, 5 PRODUK INI AKAN OTOMATIS MUNCUL DI HALAMAN PELANGGAN 🌟
         if (empty($products)) {
+            // Produk 1
             $products[] = [
                 'id'     => 1,
                 'name'   => 'Premium Dubai Pistachio Cookies',
                 'harga'  => 65000,
                 'stock'  => 20,
                 'weight' => 300,
-                'img'    => 'https://i.pinimg.com/736x/01/a0/62/01a0625906f30e61d8825227d894b9ce.jpg',
+                'img'    => 'https://i.pinimg.com/736x/f9/00/f4/f900f4fbb3f5a0f442d7c1cd6cd7036f.jpg',
+            ];
+
+            // Produk 2
+            $products[] = [
+                'id'     => 2,
+                'name'   => 'Choco Lava Soft Cookie',
+                'harga'  => 45000,
+                'stock'  => 15,
+                'weight' => 250,
+                'img'    => 'https://i.pinimg.com/736x/ae/17/63/ae1763d5d5e2331f3cf143b48f951d34.jpg',
+            ];
+
+            // Produk 3
+            $products[] = [
+                'id'     => 3,
+                'name'   => 'Matcha Crunch Croissant',
+                'harga'  => 38000,
+                'stock'  => 25,
+                'weight' => 200,
+                'img'    => 'https://i.pinimg.com/736x/46/71/e6/4671e6f8dc684323f7079880e3ab1cf9.jpg',
+            ];
+
+            // Produk 4
+            $products[] = [
+                'id'     => 4,
+                'name'   => 'Almond Butter Pastry',
+                'harga'  => 42000,
+                'stock'  => 12,
+                'weight' => 180,
+                'img'    => 'https://i.pinimg.com/736x/87/86/c2/8786c259b28b1baf4eb23388a8632fdd.jpg',
+            ];
+
+            // Produk 5
+            $products[] = [
+                'id'     => 5,
+                'name'   => 'Red Velvet Cheese Cake',
+                'harga'  => 55000,
+                'stock'  => 10,
+                'weight' => 350,
+                'img'    => 'https://i.pinimg.com/1200x/53/1d/ed/531ded52ee8ff810c4cdb3a864396c0a.jpg',
+            ];
+
+             $products[] = [
+                'id'     => 6,
+                'name'   => 'Cinnamon Bun',
+                'harga'  => 48000,
+                'stock'  => 10,
+                'weight' => 300,
+                'img'    => 'https://i.pinimg.com/1200x/4f/72/4c/4f724c7c6cf4ffec87c4f680a3118308.jpg',
             ];
         }
 
@@ -153,7 +204,7 @@ class ShippingController extends Controller
                 'harga'      => $request->harga,
                 'weight'     => $request->weight,
                 'stock'      => $request->stock,
-                'img'        => 'https://i.pinimg.com/736x/01/a0/62/01a0625906f30e61d8825227d894b9ce.jpg', // Link Pinterest Kue
+                'img'        => 'https://i.pinimg.com/736x/01/a0/62/01a0625906f30e61d8825227d894b9ce.jpg',
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
