@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Muma Artisan Bakery</title>
+    <title>Muma Bakery</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
     
     <style>
         :root {
-            /* Warna latar belakang krem susu hangat, anti-gelap & anti-riweh */
+            /* Latar belakang krem hangat minimalis, anti-riweh */
             --bg-canvas: #fcfbfa; 
             --bg-kartu: #ffffff; 
             --warna-teks: #2b2927; 
@@ -31,7 +31,7 @@
             position: relative;
         }
 
-        /* Ambient Glow Halus di Background (Efek Estetik Cantik, Bukan Gambar Riweh) */
+        /* Gradasi Halus di Background (Bukan Gambar Riweh) */
         .ambient-glow-1 {
             position: fixed;
             top: -10%;
@@ -76,15 +76,14 @@
             font-size: 22px;
             font-weight: 800;
             letter-spacing: -0.5px;
-            text-transform: uppercase;
+            text-transform: lowercase;
         }
         .brand-signature span {
             font-family: var(--font-serif);
-            text-transform: lowercase;
             font-style: italic;
             font-weight: 400;
             color: var(--warna-aksen);
-            margin-left: 3px;
+            margin-left: 1px;
         }
 
         /* Hero Title */
@@ -109,7 +108,7 @@
             color: var(--warna-teks);
         }
 
-        /* Floating Dock */
+        /* Floating Nav Dock */
         .floating-dock-container {
             position: fixed;
             bottom: 40px;
@@ -158,7 +157,7 @@
             padding: 0 60px;
         }
 
-        /* Kartu Metrik */
+        /* Kartu Analitik */
         .stat-box-modern {
             background: var(--bg-kartu);
             border: 1px solid var(--garis-tipis);
@@ -178,7 +177,7 @@
             color: var(--warna-aksen);
         }
 
-        /* Kartu Produk Estetik */
+        /* Kartu Produk */
         .modern-product-layout {
             background: var(--bg-kartu);
             border: 1px solid var(--garis-tipis);
@@ -209,7 +208,7 @@
             padding: 24px;
         }
 
-        /* Tombol */
+        /* Tombol & Input */
         .btn-action-black {
             background: var(--warna-teks);
             color: #ffffff;
@@ -256,7 +255,7 @@
             border-color: var(--warna-redup);
         }
 
-        /* SPA Layout */
+        /* SPA Router View */
         .app-view-panel { display: none; }
         .app-view-panel.view-active { 
             display: block; 
@@ -277,26 +276,26 @@
 </head>
 <body>
 
-    <!-- Bulatan Gradasi Lembut di Background -->
+    <!-- Efek Latar Belakang Estetik -->
     <div class="ambient-glow-1"></div>
     <div class="ambient-glow-2"></div>
 
-    <!-- HEADER -->
+    <!-- NAVBAR ATAS -->
     <div class="top-luxury-nav">
-        <div class="brand-signature">Muma<span>artisan</span></div>
+        <div class="brand-signature">muma<span>bakery</span></div>
         <div style="display: flex; align-items: center; gap: 14px; background: #ffffff; padding: 8px 16px; border-radius: 20px; border: 1px solid var(--garis-tipis);">
             <span id="label-status-akses" style="font-size: 11px; color: var(--warna-aksen); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Pelanggan</span>
             <span style="font-size: 11px; color: var(--warna-redup); cursor: pointer; text-decoration: underline;" onclick="gantiHakAkses()">Ubah Akun</span>
         </div>
     </div>
 
-    <!-- HERO TEXT -->
+    <!-- UTAMA TEXT HERO -->
     <div class="hero-artisan-title">
         <span>Dipanggang Segar Setiap Pagi</span>
         <h1>Karya Rasa Autentik.</h1>
     </div>
 
-    <!-- DOCK MENU MENU MELAYANG -->
+    <!-- FLOATING TAB NAVIGASI -->
     <nav class="floating-dock-container">
         <ul class="dock-menu-list">
             <li class="khusus-admin"><a class="dock-item aktif" id="menu-dasbor" onclick="pindahHalaman('halaman-dasbor')">Analitik</a></li>
@@ -306,10 +305,10 @@
         </ul>
     </nav>
 
-    <!-- CONTENT -->
+    <!-- CONTAINER HALAMAN -->
     <div class="main-container-app">
 
-        <!-- VIEW: DASBOR ANALITIK (ADMIN) -->
+        <!-- PANEL: ADMIN DASBOR -->
         <div id="halaman-dasbor" class="app-view-panel khusus-admin">
             <div class="row g-4 mb-5">
                 <div class="col-md-3">
@@ -338,7 +337,7 @@
                 </div>
             </div>
 
-            <!-- Form Tambah Produk -->
+            <!-- Form Resep -->
             <div style="background: var(--bg-kartu); padding: 36px; border: 1px solid var(--garis-tipis); border-radius: 24px;">
                 <h5 class="mb-4" style="font-weight: 700; letter-spacing: -0.5px;">Registrasi Resep Menu Baru</h5>
                 <form action="{{ route('product.store') }}" method="POST" class="row g-3">
@@ -362,7 +361,7 @@
             </div>
         </div>
 
-        <!-- VIEW: KATALOG MENU -->
+        <!-- PANEL: KATALOG MENU -->
         <div id="halaman-katalog" class="app-view-panel">
             <div class="row">
                 <div class="col-lg-8">
@@ -394,7 +393,7 @@
                             @endforeach
                         @else
                             <div class="col-12 py-5 text-center text-muted" style="font-size: 14px; font-style: italic; background: var(--bg-kartu); border: 1px dashed var(--garis-tipis); border-radius: 20px;">
-                                Belum ada menu baru yang dikeluarkan dari oven hari ini.
+                                Belum ada menu hangat yang dikeluarkan dari oven hari ini.
                             </div>
                         @endif
                     </div>
@@ -427,7 +426,7 @@
             </div>
         </div>
 
-        <!-- VIEW: ONGKIR -->
+        <!-- PANEL: LOGISTIK ONGKIR -->
         <div id="halaman-logistik" class="app-view-panel">
             <div class="row g-4">
                 <div class="col-md-6">
@@ -463,14 +462,14 @@
                     <div class="p-4" style="background: #ffffff; border: 1px solid var(--garis-tipis); min-height: 350px; border-radius: 24px;">
                         <div style="font-size:12px; text-transform: uppercase; color:var(--warna-redup); font-weight:700; margin-bottom: 24px;">Opsi Pengiriman Tersedia</div>
                         <div id="hasil-ongkir-output">
-                            <p class="text-muted text-center py-5" style="font-size:14px; font-style: italic;">Masukkan lokasi untuk menghitung rute tarif.</p>
+                            <p class="text-muted text-center py-5" style="font-size:14px; font-style: italic;">Masukkan lokasi untuk menghitung tarif rute logistik.</p>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- VIEW: ANTREAN ORDER (ADMIN) -->
+        <!-- PANEL: ANTREAN ORDERS (ADMIN) -->
         <div id="halaman-pesanan" class="app-view-panel khusus-admin">
             <div class="p-4" style="background: var(--bg-kartu); border: 1px solid var(--garis-tipis); border-radius:24px;">
                 <div class="table-responsive">
@@ -502,10 +501,10 @@
 
     </div>
 
-    <!-- NOTA TERMAL UNTUK ACTION PRINT -->
+    <!-- STRUK UNTUK ACTION PRINT -->
     <div id="struk-cetak-termal">
         <div style="text-align: center; border-bottom: 1px dashed #000; padding-bottom: 8px; margin-bottom: 8px;">
-            <strong style="font-size: 14px;">MUMA ARTISAN BAKERY</strong><br>
+            <strong style="font-size: 14px;">MUMA BAKERY</strong><br>
             <small style="font-size:9px;">Dokumen Pengiriman Barang</small>
         </div>
         <div style="border: 1px solid #000; padding: 6px; text-align: center; margin-bottom: 8px; font-weight: bold; letter-spacing: 1px;">
