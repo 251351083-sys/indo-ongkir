@@ -3,6 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\ShippingController;
+use App\Http\Controllers\ProductController; // Tambahkan controller ini jika ada
+use App\Http\Controllers\OrderController;   // Tambahkan controller ini jika ada
 
 // Rute Dashboard bawaan Laravel Breeze (Biar gak eror saat login/register)
 Route::get('/dashboard', function () {
@@ -30,6 +32,16 @@ Route::middleware('auth')->group(function () {
         session(['user_role' => $role]);
         return redirect()->back();
     })->name('switch.role');
+
+    // ======================================================================
+    // 🌟 SELEKSI RUTE BARU BIAR TOMBOL PUBLISH & PESANAN ADMIN BERFUNGSI 🌟
+    // ======================================================================
+    
+    // Rute untuk memproses Form Tambah Produk dari Admin
+    Route::post('/product/store', [ShippingController::class, 'storeProduct'])->name('product.store');
+    
+    // Rute untuk memproses Form Kirim Pesanan Nyata dari Pelanggan ke Database Admin
+    Route::post('/order/store', [ShippingController::class, 'storeOrder'])->name('order.store');
 
 });
 
