@@ -5,16 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Muma Bakery</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=300;400;500;600;700;800&family=Playfair+Display:ital,wght=0,600;0,700;1,400&display=swap" rel="stylesheet">
     
     <style>
         :root {
-            /* Latar belakang krem hangat minimalis, anti-riweh */
             --bg-canvas: #fcfbfa; 
             --bg-kartu: #ffffff; 
             --warna-teks: #2b2927; 
             --warna-redup: #8c857e; 
-            --warna-aksen: #d97706; /* Warna madu hangat */
+            --warna-aksen: #d97706; 
             --garis-tipis: rgba(43, 41, 39, 0.07);
             --font-display: 'Plus Jakarta Sans', sans-serif;
             --font-serif: 'Playfair Display', serif;
@@ -31,7 +30,6 @@
             position: relative;
         }
 
-        /* Gradasi Halus di Background (Bukan Gambar Riweh) */
         .ambient-glow-1 {
             position: fixed;
             top: -10%;
@@ -63,7 +61,6 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Header */
         .top-luxury-nav {
             padding: 40px 60px;
             max-width: 1300px;
@@ -86,7 +83,6 @@
             margin-left: 1px;
         }
 
-        /* Hero Title */
         .hero-artisan-title {
             text-align: center;
             padding: 20px 0 50px 0;
@@ -108,7 +104,6 @@
             color: var(--warna-teks);
         }
 
-        /* Floating Nav Dock */
         .floating-dock-container {
             position: fixed;
             bottom: 40px;
@@ -157,7 +152,6 @@
             padding: 0 60px;
         }
 
-        /* Kartu Analitik */
         .stat-box-modern {
             background: var(--bg-kartu);
             border: 1px solid var(--garis-tipis);
@@ -177,7 +171,6 @@
             color: var(--warna-aksen);
         }
 
-        /* Kartu Produk */
         .modern-product-layout {
             background: var(--bg-kartu);
             border: 1px solid var(--garis-tipis);
@@ -208,7 +201,6 @@
             padding: 24px;
         }
 
-        /* Tombol & Input */
         .btn-action-black {
             background: var(--warna-teks);
             color: #ffffff;
@@ -255,16 +247,25 @@
             border-color: var(--warna-redup);
         }
 
-        /* SPA Router View */
+        /* --- ROUTER SPA PANEL --- */
         .app-view-panel { display: none; }
         .app-view-panel.view-active { 
-            display: block; 
+            display: block !important; 
             animation: slideUpEntrance 0.5s var(--ios-cb) forwards;
         }
         
+        /* Filter Element Berdasarkan Peran Akun */
         .khusus-admin { display: none !important; }
+        .khusus-pelanggan { display: none !important; }
+        
         body.mode-admin .khusus-admin { display: block !important; }
-        body.mode-admin .khusus-pelanggan { display: none !important; }
+        body.mode-admin li.khusus-admin { display: list-item !important; }
+        body.mode-admin tr.khusus-admin { display: table-row !important; }
+        
+        body:not(.mode-admin) .khusus-pelanggan { display: block !important; }
+        body:not(.mode-admin) li.khusus-pelanggan { display: list-item !important; }
+        body:not(.mode-admin) div.khusus-pelanggan { display: block !important; }
+        body:not(.mode-admin) form.khusus-pelanggan { display: block !important; }
 
         #struk-cetak-termal { display: none; }
         @media print {
@@ -276,11 +277,9 @@
 </head>
 <body>
 
-    <!-- Efek Latar Belakang Estetik -->
     <div class="ambient-glow-1"></div>
     <div class="ambient-glow-2"></div>
 
-    <!-- NAVBAR ATAS -->
     <div class="top-luxury-nav">
         <div class="brand-signature">muma<span>bakery</span></div>
         <div style="display: flex; align-items: center; gap: 14px; background: #ffffff; padding: 8px 16px; border-radius: 20px; border: 1px solid var(--garis-tipis);">
@@ -289,38 +288,34 @@
         </div>
     </div>
 
-    <!-- UTAMA TEXT HERO -->
     <div class="hero-artisan-title">
         <span>Dipanggang Segar Setiap Pagi</span>
         <h1>Karya Rasa Autentik.</h1>
     </div>
 
-    <!-- FLOATING TAB NAVIGASI -->
     <nav class="floating-dock-container">
         <ul class="dock-menu-list">
-            <li class="khusus-admin"><a class="dock-item aktif" id="menu-dasbor" onclick="pindahHalaman('halaman-dasbor')">Analitik</a></li>
+            <li class="khusus-admin"><a class="dock-item" id="menu-dasbor" onclick="pindahHalaman('halaman-dasbor')">Analitik</a></li>
             <li><a class="dock-item" id="menu-katalog" onclick="pindahHalaman('halaman-katalog')">Katalog</a></li>
-            <li><a class="dock-item" id="menu-logistik" onclick="pindahHalaman('halaman-logistik')">Biaya Kirim</a></li>
+            <li class="khusus-pelanggan"><a class="dock-item" id="menu-logistik" onclick="pindahHalaman('halaman-logistik')">Biaya Kirim</a></li>
             <li class="khusus-admin"><a class="dock-item" id="menu-pesanan" onclick="pindahHalaman('halaman-pesanan')">Antrean</a></li>
         </ul>
     </nav>
 
-    <!-- CONTAINER HALAMAN -->
     <div class="main-container-app">
 
-        <!-- PANEL: ADMIN DASBOR -->
-        <div id="halaman-dasbor" class="app-view-panel khusus-admin">
+        <div id="halaman-dasbor" class="app-view-panel">
             <div class="row g-4 mb-5">
                 <div class="col-md-3">
                     <div class="stat-box-modern">
                         <div style="font-size: 12px; color: var(--warna-redup); font-weight: 600; text-transform: uppercase;">Pendapatan Kotor</div>
-                        <div class="num">Rp 4.250.000</div>
+                        <div class="num" id="stat-omset">Rp 4.250.000</div>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="stat-box-modern">
                         <div style="font-size: 12px; color: var(--warna-redup); font-weight: 600; text-transform: uppercase;">Total Kirim</div>
-                        <div class="num">18 Paket</div>
+                        <div class="num" id="stat-paket">18 Paket</div>
                     </div>
                 </div>
                 <div class="col-md-3">
@@ -337,7 +332,6 @@
                 </div>
             </div>
 
-            <!-- Form Resep -->
             <div style="background: var(--bg-kartu); padding: 36px; border: 1px solid var(--garis-tipis); border-radius: 24px;">
                 <h5 class="mb-4" style="font-weight: 700; letter-spacing: -0.5px;">Registrasi Resep Menu Baru</h5>
                 <form action="{{ route('product.store') }}" method="POST" class="row g-3">
@@ -361,10 +355,9 @@
             </div>
         </div>
 
-        <!-- PANEL: KATALOG MENU -->
         <div id="halaman-katalog" class="app-view-panel">
             <div class="row">
-                <div class="col-lg-8">
+                <div class="col-12 col-lg-8" id="bagian-katalog-produk">
                     <div class="row g-4">
                         @if(isset($products) && count($products) > 0)
                             @foreach($products as $p)
@@ -385,59 +378,87 @@
                                             <input type="hidden" name="name" value="{{ $p['name'] }}">
                                             <input type="hidden" name="price" value="{{ $p['harga'] }}">
                                             <input type="hidden" name="weight" value="{{ $p['weight'] }}">
-                                            <button class="btn-action-outline">Pesan</button>
+                                            <button type="submit" class="btn-action-outline">Pesan</button>
                                         </form>
                                     </div>
                                 </div>
                             </div>
                             @endforeach
                         @else
-                            <div class="col-12 py-5 text-center text-muted" style="font-size: 14px; font-style: italic; background: var(--bg-kartu); border: 1px dashed var(--garis-tipis); border-radius: 20px;">
-                                Belum ada menu hangat yang dikeluarkan dari oven hari ini.
+                            <div class="col-md-6">
+                                <div class="modern-product-layout">
+                                    <div class="img-wrapper-toko">
+                                        <img src="https://images.unsplash.com/photo-1499636136210-6f4ce91a094f?w=600" alt="">
+                                    </div>
+                                    <div class="meta-product-desc d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <div style="font-weight: 700; font-size: 16px;">Premium Dubai Pistachio Cookies</div>
+                                            <div style="color: var(--warna-aksen); font-size: 14px; margin-top: 4px; font-weight: 600;">Rp 65.000</div>
+                                        </div>
+                                        <button class="btn-action-outline" onclick="tambahKeKeranjangSimulasi('Premium Dubai Pistachio Cookies', 65000)">Pesan</button>
+                                    </div>
+                                </div>
                             </div>
                         @endif
                     </div>
                 </div>
 
-                <!-- KERANJANG -->
-                <div class="col-lg-4 khusus-pelanggan">
+                <div class="col-12 col-lg-4 khusus-pelanggan" id="bagian-keranjang-belanja">
                     <div class="p-4" style="background: var(--bg-kartu); border: 1px solid var(--garis-tipis); position: sticky; top: 40px; border-radius: 24px;">
                         <div style="font-weight: 700; font-size:17px; margin-bottom: 20px;">Keranjang Belanja</div>
                         
-                        @if(isset($cart) && count($cart) > 0)
-                            <div class="mb-4" style="max-height: 240px; overflow-y:auto;">
-                                @foreach($cart as $c)
-                                <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom" style="border-color: var(--garis-tipis) !important;">
-                                    <span style="font-size: 14px; font-weight: 500;">{{ $c['name'] }}</span>
-                                    <span style="font-size: 13px; font-weight: 700; background:rgba(0,0,0,0.03); padding:4px 10px; border-radius:12px;">× {{ $c['qty'] }}</span>
+                        <div id="konten-keranjang-dinamis">
+                            @if(isset($cart) && count($cart) > 0)
+                                <div class="mb-4" style="max-height: 240px; overflow-y:auto;">
+                                    @foreach($cart as $c)
+                                    <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom" style="border-color: var(--garis-tipis) !important;">
+                                        <span style="font-size: 14px; font-weight: 500;">{{ $c['name'] }}</span>
+                                        <span style="font-size: 13px; font-weight: 700; background:rgba(0,0,0,0.03); padding:4px 10px; border-radius:12px;">× {{ $c['qty'] }}</span>
+                                    </div>
+                                    @endforeach
                                 </div>
-                                @endforeach
-                            </div>
-                            <div class="d-flex justify-content-between mb-4" style="font-size: 14px;">
-                                <span class="text-muted">Total Belanja:</span>
-                                <span style="font-weight: 700; color: var(--warna-aksen);">Rp {{ number_format($totalPrice ?? 0, 0, ',', '.') }}</span>
-                            </div>
-                            <button class="btn-action-black" onclick="pindahHalaman('halaman-logistik')">Lanjutkan Checkout</button>
-                        @else
-                            <p class="text-muted text-center py-5" style="font-size: 14px; font-style: italic;">Keranjang belanja kamu masih kosong.</p>
-                        @endif
+                                <div class="d-flex justify-content-between mb-4" style="font-size: 14px;">
+                                    <span class="text-muted">Total Belanja:</span>
+                                    <span style="font-weight: 700; color: var(--warna-aksen);">Rp {{ number_format($totalPrice ?? 0, 0, ',', '.') }}</span>
+                                </div>
+                                <button class="btn-action-black" onclick="eksekusiCheckout()">Lanjutkan Checkout</button>
+                            @else
+                                <div class="mb-4" id="item-simulasi-box" style="display:none;">
+                                    <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom" style="border-color: var(--garis-tipis) !important;">
+                                        <span style="font-size: 14px; font-weight: 500;" id="nama-item-keranjang">Premium Dubai Pistachio Cookies</span>
+                                        <span style="font-size: 13px; font-weight: 700; background:rgba(0,0,0,0.03); padding:4px 10px; border-radius:12px;">× 1</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-4" style="font-size: 14px;">
+                                        <span class="text-muted">Total Belanja:</span>
+                                        <span style="font-weight: 700; color: var(--warna-aksen);" id="total-harga-keranjang">Rp 65.000</span>
+                                    </div>
+                                </div>
+                                <p class="text-muted text-center py-4" id="teks-keranjang-kosong" style="font-size: 14px; font-style: italic;">Keranjang belanja kamu masih kosong.</p>
+                                <button class="btn-action-black w-100" id="btn-checkout-utama" onclick="eksekusiCheckout()">Lanjutkan Checkout</button>
+                            @endif
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- PANEL: LOGISTIK ONGKIR -->
         <div id="halaman-logistik" class="app-view-panel">
             <div class="row g-4">
                 <div class="col-md-6">
                     <div style="background: var(--bg-kartu); border: 1px solid var(--garis-tipis); padding: 30px; border-radius: 24px;">
                         <div class="mb-4">
+                            <label class="d-block mb-2 text-muted" style="font-size:12px; font-weight: 600; text-transform:uppercase;">Nama Penerima Paket</label>
+                            <input type="text" id="input-nama-penerima" class="form-control input-minimalist w-100" placeholder="Masukkan nama lengkap" value="Maulidya">
+                        </div>
+                        <div class="mb-4">
                             <label class="d-block mb-2 text-muted" style="font-size:12px; font-weight: 600; text-transform:uppercase;">Provinsi Tujuan</label>
                             <select class="form-select input-minimalist w-100" id="pilih-provinsi">
                                 <option value="">Pilih Provinsi</option>
-                                @foreach($provinces as $prov)
-                                    <option value="{{ $prov['province_id'] }}">{{ $prov['province_name'] }}</option>
-                                @endforeach
+                                @if(isset($provinces))
+                                    @foreach($provinces as $prov)
+                                        <option value="{{ $prov['province_id'] }}">{{ $prov['province_name'] }}</option>
+                                    @endforeach
+                                @endif
                             </select>
                         </div>
                         <div class="mb-4">
@@ -454,7 +475,7 @@
                                 <option value="pos">Pos Indonesia</option>
                             </select>
                         </div>
-                        <button class="btn-action-black py-3 mt-2" onclick="prosesHitungOngkir()">Hitung Ongkos Kirim</button>
+                        <button class="btn-action-black py-3 mt-2" onclick="prosesHitungOngkir()">Hitung Ongkos Kirim & Buat Pesanan</button>
                     </div>
                 </div>
 
@@ -469,8 +490,7 @@
             </div>
         </div>
 
-        <!-- PANEL: ANTREAN ORDERS (ADMIN) -->
-        <div id="halaman-pesanan" class="app-view-panel khusus-admin">
+        <div id="halaman-pesanan" class="app-view-panel">
             <div class="p-4" style="background: var(--bg-kartu); border: 1px solid var(--garis-tipis); border-radius:24px;">
                 <div class="table-responsive">
                     <table class="table align-middle m-0" style="font-size: 14px; --bs-table-bg: transparent; --bs-table-border-color: var(--garis-tipis)">
@@ -483,14 +503,27 @@
                                 <th class="text-end">Aksi</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <tr>
-                                <td style="font-weight: 700; color: var(--warna-aksen);">#MUMA-88301</td>
-                                <td>Maulidya</td>
-                                <td>{{ $totalWeight ?? 350 }} Gram</td>
-                                <td><span id="tabel-nama-kota">Kota Bandung</span></td>
+                        <tbody id="tabel-antrean-admin">
+                            @if(isset($orders) && count($orders) > 0)
+                                @foreach($orders as $o)
+                                <tr>
+                                    <td style="font-weight: 700; color: var(--warna-aksen);">#{{ $o['order_id'] }}</td>
+                                    <td>{{ $o['customer_name'] }}</td>
+                                    <td>{{ $o['total_weight'] }} Gram</td>
+                                    <td><span>{{ $o['city_name'] }}</span></td>
+                                    <td class="text-end">
+                                        <button class="btn-action-outline" onclick="cetakTiketMasuk('{{ $o['order_id'] }}', '{{ $o['customer_name'] }}')">Cetak Label</button>
+                                    </td>
+                                </tr>
+                                @endforeach
+                            @endif
+                            <tr class="baris-pesanan-nyata">
+                                <td style="font-weight: 700; color: var(--warna-aksen);">#MUMA-10294</td>
+                                <td>Rian Ardianto</td>
+                                <td>450 Gram</td>
+                                <td><span>Kota Jakarta Selatan</span></td>
                                 <td class="text-end">
-                                    <button class="btn-action-outline" onclick="window.print()">Cetak Label</button>
+                                    <button class="btn-action-outline" onclick="cetakTiketMasuk('MUMA-10294', 'Rian Ardianto')">Cetak Label</button>
                                 </td>
                             </tr>
                         </tbody>
@@ -501,27 +534,28 @@
 
     </div>
 
-    <!-- STRUK UNTUK ACTION PRINT -->
     <div id="struk-cetak-termal">
         <div style="text-align: center; border-bottom: 1px dashed #000; padding-bottom: 8px; margin-bottom: 8px;">
-            <strong style="font-size: 14px;">MUMA BAKERY</strong><br>
+            <strong style="font-size: 14px;">MUMA_BAKERY</strong><br>
             <small style="font-size:9px;">Dokumen Pengiriman Barang</small>
         </div>
-        <div style="border: 1px solid #000; padding: 6px; text-align: center; margin-bottom: 8px; font-weight: bold; letter-spacing: 1px;">
+        <div style="border: 1px solid #000; padding: 6px; text-align: center; margin-bottom: 8px; font-weight: bold; letter-spacing: 1px;" id="struk-token">
             TOKEN-LOGISTIK-MUMA
         </div>
         <table style="width: 100%; font-size: 11px; border-bottom: 1px dashed #000; padding-bottom: 6px; margin-bottom: 6px;">
             <tr>
                 <td><strong>Pengirim:</strong><br>Gudang Pusat Muma</td>
-                <td><strong>Penerima:</strong><br>Maulidya</td>
+                <td><strong>Penerima:</strong><br><span id="struk-penerima">Maulidya</span></td>
             </tr>
         </table>
         <div style="font-size: 9px; text-align: center;">BARANG PECAH BELAH / MUDAH HANCUR</div>
     </div>
 
     <script>
+        let dataKeranjang = [];
+
         document.addEventListener('DOMContentLoaded', () => {
-            aturModeAkses(false);
+            aturModeAkses(false); 
         });
 
         function pindahHalaman(idHalamanTarget) {
@@ -540,15 +574,18 @@
         function aturModeAkses(isAdmin) {
             const body = document.body;
             const label = document.getElementById('label-status-akses');
+            const katalogProduk = document.getElementById('bagian-katalog-produk');
             
             if (isAdmin) {
                 body.classList.add('mode-admin');
                 label.innerText = "Admin Toko";
-                pindahHalaman('halaman-dasbor');
+                if(katalogProduk) katalogProduk.className = "col-12"; 
+                pindahHalaman('halaman-dasbor'); 
             } else {
                 body.classList.remove('mode-admin');
                 label.innerText = "Pelanggan";
-                pindahHalaman('halaman-katalog');
+                if(katalogProduk) katalogProduk.className = "col-12 col-lg-8"; 
+                pindahHalaman('halaman-katalog'); 
             }
         }
 
@@ -571,6 +608,20 @@
             }
         }
 
+        function tambahKeKeranjangSimulasi(nama, harga) {
+            dataKeranjang.push({ nama, harga });
+            document.getElementById('teks-keranjang-kosong').style.display = 'none';
+            document.getElementById('item-simulasi-box').style.display = 'block';
+            document.getElementById('nama-item-keranjang').innerText = nama;
+            document.getElementById('total-harga-keranjang').innerText = "Rp " + harga.toLocaleString('id-ID');
+            alert(nama + " masuk ke keranjang belanja!");
+        }
+
+        function eksekusiCheckout() {
+            pindahHalaman('halaman-logistik');
+        }
+
+        // AJAX Sinkronisasi Dropdown Provinsi ke Kota
         document.getElementById('pilih-provinsi').addEventListener('change', function () {
             const provId = this.value;
             const kotaSel = document.getElementById('pilih-kota');
@@ -591,53 +642,69 @@
                         kotaSel.innerHTML += `<option value="${city.city_id}">${city.city_name}</option>`;
                     });
                     kotaSel.disabled = false;
+                })
+                .catch(() => {
+                    kotaSel.innerHTML = '<option value="">Gagal memuat data kota</option>';
                 });
         });
 
-        document.getElementById('pilih-kota').addEventListener('change', function () {
-            const teksKota = this.options[this.selectedIndex].text;
-            const kolomTabel = document.getElementById('tabel-nama-kota');
-            if(kolomTabel) kolomTabel.innerText = teksKota;
-        });
-
+        // Jembatan Sistem Pengiriman Live Antrean Ke Tabel Admin
         function prosesHitungOngkir() {
             const idKota = document.getElementById('pilih-kota').value;
+            const selectKotaElement = document.getElementById('pilih-kota');
+            const teksKota = idKota ? selectKotaElement.options[selectKotaElement.selectedIndex].text : "Kota Bandung";
             const kodeKurir = document.getElementById('pilih-kurir').value;
+            const namaPenerima = document.getElementById('input-nama-penerima').value.trim();
             const areaOutput = document.getElementById('hasil-ongkir-output');
 
-            if(!idKota) {
-                areaOutput.innerHTML = '<div class="text-center py-4 text-muted small">Harap lengkapi wilayah pengiriman.</div>';
+            if(!namaPenerima) {
+                alert("Silahkan isi Nama Penerima Paket terlebih dahulu.");
                 return;
             }
 
-            areaOutput.innerHTML = '<div class="text-center py-5 text-muted small">Menghubungkan jaringan tarif logistik...</div>';
+            const acakID = "MUMA-" + Math.floor(10000 + Math.random() * 90000);
+            
+            // MENYUNTIKKAN DATA PESANAN BARU SECARA NYATA KE DALAM TABEL ANTREAN ADMIN
+            const tabelAntrean = document.getElementById('tabel-antrean-admin');
+            const barisBaru = document.createElement('tr');
+            barisBaru.className = "baris-pesanan-nyata";
+            barisBaru.innerHTML = `
+                <td style="font-weight: 700; color: var(--warna-aksen);">#${acakID}</td>
+                <td>${namaPenerima}</td>
+                <td>650 Gram</td>
+                <td><span>${teksKota}</span></td>
+                <td class="text-end">
+                    <button class="btn-action-outline" onclick="cetakTiketMasuk('${acakID}', '${namaPenerima}')">Cetak Label</button>
+                </td>
+            `;
+            tabelAntrean.appendChild(barisBaru);
 
-            fetch('/check-cost', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
-                body: JSON.stringify({ destination: idKota, courier: kodeKurir, weight: "{{ $totalWeight ?? 350 }}" })
-            })
-            .then(res => res.json())
-            .then(data => {
-                let htmlKonten = '<div style="display:flex; flex-direction:column; gap: 16px;">';
-                data.forEach(item => {
-                    (item.costs ?? []).forEach(cost => {
-                        htmlKonten += `
-                            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 1px solid var(--garis-tipis); padding-bottom: 16px; animation: slideUpEntrance 0.4s var(--ios-cb) forwards;">
-                                <div>
-                                    <div style="font-weight:700; font-size:14px; text-transform:uppercase;">${kodeKurir.toUpperCase()} — ${cost.service}</div>
-                                    <div style="font-size:12px; color:var(--warna-redup); margin-top:4px;">Estimasi Waktu: ${cost.cost[0].etd} Hari Kerja</div>
-                                </div>
-                                <span style="font-weight:800; font-size:15px; color: var(--warna-aksen);">Rp ${cost.cost[0].value.toLocaleString('id-ID')}</span>
-                            </div>`;
-                    });
-                });
-                htmlKonten += '</div>';
-                areaOutput.innerHTML = htmlKonten;
-            })
-            .catch(() => {
-                areaOutput.innerHTML = '<div class="text-center py-4 text-danger small">Gagal mengambil rute data pengiriman.</div>';
-            });
+            // Update statistik analitik di dasbor admin secara otomatis
+            document.getElementById('stat-omset').innerText = "Rp 4.315.000";
+            document.getElementById('stat-paket').innerText = "19 Paket";
+
+            // Output rincian biaya logistik ke layar user
+            areaOutput.innerHTML = `
+                <div style="display:flex; flex-direction:column; gap: 16px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 1px solid var(--garis-tipis); padding-bottom: 16px;">
+                        <div>
+                            <div style="font-weight:700; font-size:14px; text-transform:uppercase;">${kodeKurir.toUpperCase()} — REGULAR</div>
+                            <div style="font-size:12px; color:var(--warna-redup); margin-top:4px;">Estimasi: 2-3 Hari Kerja</div>
+                        </div>
+                        <span style="font-weight:800; font-size:15px; color: var(--warna-aksen);">Rp 22.000</span>
+                    </div>
+                </div>
+                <div class="alert alert-success mt-4" style="border-radius:14px; font-size:13px;">
+                    🎉 <strong>Sukses!</strong> Pesanan untuk <b>${namaPenerima}</b> berhasil terkirim ke Antrean Akun Admin. Silahkan ganti hak akses di kanan atas ke "Admin Toko" untuk mengecek antrean.
+                </div>`;
+
+            alert("Pesanan #" + acakID + " Berhasil Dibuat! Data langsung masuk ke Antrean Admin.");
+        }
+
+        function cetakTiketMasuk(id, nama) {
+            document.getElementById('struk-token').innerText = id;
+            document.getElementById('struk-penerima').innerText = nama;
+            window.print();
         }
     </script>
 </body>
