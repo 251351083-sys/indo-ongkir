@@ -353,9 +353,9 @@
                     beneran tersimpan ke database, hapus baris "e.preventDefault();" di dalam
                     fungsi tersebut, atau tambahkan fetch() ke endpoint kamu di situ.
                 -->
-                <form id="form-tambah-produk" action="{{ route('product.store') }}" method="POST" class="row g-3">
+                <form id="form-tambah-produk" action="{{ route('product.store') }}" method="POST" enctype="multipart/form-data" class="row g-3">
                     @csrf
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <input type="text" class="form-control input-minimalist" name="name" placeholder="Nama Menu" required>
                     </div>
                     <div class="col-md-2">
@@ -367,8 +367,14 @@
                     <div class="col-md-2">
                         <input type="number" class="form-control input-minimalist" name="stock" placeholder="Stok" required>
                     </div>
-                    <div class="col-md-2">
-                        <button type="submit" class="btn-action-black" style="padding:16px 0;">Publish</button>
+                    <div class="col-md-3">
+                        <input type="file" class="form-control input-minimalist" id="input-foto-produk" name="foto" accept="image/*">
+                    </div>
+                    <div class="col-12">
+                        <textarea class="form-control input-minimalist" name="description" id="input-deskripsi-produk" rows="2" placeholder="Deskripsi Menu (contoh: bahan, rasa, keunikan produk)"></textarea>
+                    </div>
+                    <div class="col-12">
+                        <button type="submit" class="btn-action-black" style="padding:16px 24px; width:auto;">Publish</button>
                     </div>
                 </form>
             </div>
@@ -549,8 +555,8 @@
             : (window.__produkDariServer && window.__produkDariServer.length > 0)
                 ? window.__produkDariServer
                 : [
-                    { id: 'demo-1', name: 'Premium Dubai Pistachio Cookies', harga: 65000, weight: 250, img: 'https://images.unsplash.com/photo-1499636136210-6f4ce91a094f?w=600' },
-                    { id: 'demo-2', name: 'Butter Croissant Klasik', harga: 28000, weight: 90, img: 'https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=600' }
+                    { id: 'demo-1', name: 'Premium Dubai Pistachio Cookies', harga: 65000, weight: 250, stock: 20, description: 'Cookies premium dengan lelehan pistachio dan kunafa, renyah di luar lembut di dalam.', img: 'https://images.unsplash.com/photo-1499636136210-6f4ce91a094f?w=600' },
+                    { id: 'demo-2', name: 'Butter Croissant Klasik', harga: 28000, weight: 90, stock: 30, description: 'Croissant mentega klasik, berlapis-lapis dan gurih, dipanggang segar tiap pagi.', img: 'https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=600' }
                   ];
  
         // Isi keranjang: { id, name, harga, weight, qty }
@@ -585,33 +591,75 @@
                 const harga = parseInt(formProduk.querySelector('[name="harga"]').value, 10);
                 const berat = parseInt(formProduk.querySelector('[name="weight"]').value, 10);
                 const stok = parseInt(formProduk.querySelector('[name="stock"]').value, 10);
+                const deskripsi = document.getElementById('input-deskripsi-produk').value.trim();
+                const fileFoto = document.getElementById('input-foto-produk').files[0];
  
                 if (!nama || !harga || !berat || !stok) {
                     alert('Semua kolom wajib diisi dengan angka yang benar.');
                     return;
                 }
  
-                dataProduk.push({
-                    id: 'prod-' + Date.now(),
-                    name: nama,
-                    harga: harga,
-                    weight: berat,
-                    stock: stok,
-                    img: GAMBAR_CADANGAN
-                });
+                function simpanProdukBaru(urlFoto) {
+                    dataProduk.push({
+                        id: 'prod-' + Date.now(),
+                        name: nama,
+                        harga: harga,
+                        weight: berat,
+                        stock: stok,
+                        description: deskripsi,
+                        img: urlFoto || GAMBAR_CADANGAN
+                    });
  
-                renderKatalog();
-                simpanData();
-                formProduk.reset();
-                alert('Menu "' + nama + '" berhasil dipublish ke katalog!');
-                pindahHalaman('halaman-katalog');
+                    renderKatalog();
+                    simpanData();
+                    formProduk.reset();
+                    alert('Menu "' + nama + '" berhasil dipublish ke katalog!');
+                    pindahHalaman('halaman-katalog');
+                }
+ 
+                if (fileFoto) {
+                    // Batas ukuran biar tidak bikin localStorage penuh (localStorage total cuma ~5-10MB)
+                    if (fileFoto.size > 1.5 * 1024 * 1024) {
+                        alert('Ukuran foto maksimal 1.5MB ya, biar tetap ringan tersimpan di browser.');
+                        return;
+                    }
+                    const pembaca = new FileReader();
+                    pembaca.onload = function (ev) {
+                        simpanProdukBaru(ev.target.result); // hasilnya data URL base64, langsung bisa dipakai di <img src>
+                    };
+                    pembaca.onerror = function () {
+                        alert('Gagal membaca file foto, produk tetap dipublish pakai foto cadangan.');
+                        simpanProdukBaru(null);
+                    };
+                    pembaca.readAsDataURL(fileFoto);
+                } else {
+                    simpanProdukBaru(null);
+                }
             });
  
             // ---- Delegasi klik tombol "Pesan" di katalog (kerja untuk produk lama maupun baru) ----
             document.getElementById('wadah-produk-katalog').addEventListener('click', function (e) {
-                const tombol = e.target.closest('.btn-pesan-produk');
-                if (!tombol) return;
-                tambahKeKeranjang(tombol.dataset.id, tombol.dataset.name, parseInt(tombol.dataset.harga, 10), parseInt(tombol.dataset.weight, 10));
+                const tombolPesan = e.target.closest('.btn-pesan-produk');
+                if (tombolPesan) {
+                    tambahKeKeranjang(tombolPesan.dataset.id, tombolPesan.dataset.name, parseInt(tombolPesan.dataset.harga, 10), parseInt(tombolPesan.dataset.weight, 10));
+                    return;
+                }
+ 
+                const tombolSimpanEdit = e.target.closest('.btn-simpan-edit-produk');
+                if (tombolSimpanEdit) {
+                    const id = tombolSimpanEdit.dataset.id;
+                    const inputHarga = document.querySelector(`.input-edit-harga[data-id="${id}"]`);
+                    const inputStok = document.querySelector(`.input-edit-stok[data-id="${id}"]`);
+                    const inputDeskripsi = document.querySelector(`.input-edit-deskripsi[data-id="${id}"]`);
+                    simpanEditProduk(id, inputHarga.value, inputStok.value, inputDeskripsi.value);
+                    return;
+                }
+ 
+                const tombolHapus = e.target.closest('.btn-hapus-produk');
+                if (tombolHapus) {
+                    hapusProduk(tombolHapus.dataset.id);
+                    return;
+                }
             });
  
             // ---- Delegasi klik tombol hapus item di keranjang ----
@@ -634,19 +682,80 @@
                             <img src="${p.img || GAMBAR_CADANGAN}" alt="${p.name}"
                                  onerror="this.onerror=null; this.src='${GAMBAR_CADANGAN}';">
                         </div>
-                        <div class="meta-product-desc d-flex justify-content-between align-items-center">
-                            <div>
-                                <div style="font-weight: 700; font-size: 16px;">${p.name}</div>
-                                <div style="color: var(--warna-aksen); font-size: 14px; margin-top: 4px; font-weight: 600;">Rp ${Number(p.harga).toLocaleString('id-ID')}</div>
+                        <div class="meta-product-desc">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div style="font-weight: 700; font-size: 16px;">${p.name}</div>
+                                    <div style="color: var(--warna-aksen); font-size: 14px; margin-top: 4px; font-weight: 600;">Rp ${Number(p.harga).toLocaleString('id-ID')}</div>
+                                    ${p.stock !== undefined ? `<div style="font-size: 12px; color: var(--warna-redup); margin-top: 2px;">Stok: ${p.stock}</div>` : ''}
+                                </div>
+                                <button type="button" class="btn-action-outline btn-pesan-produk khusus-pelanggan"
+                                        data-id="${p.id}" data-name="${p.name}" data-harga="${p.harga}" data-weight="${p.weight}">
+                                    Pesan
+                                </button>
                             </div>
-                            <button type="button" class="btn-action-outline btn-pesan-produk khusus-pelanggan"
-                                    data-id="${p.id}" data-name="${p.name}" data-harga="${p.harga}" data-weight="${p.weight}">
-                                Pesan
-                            </button>
+                            ${p.description ? `<div style="font-size: 13px; color: var(--warna-redup); margin-top: 12px; line-height: 1.5;">${p.description}</div>` : ''}
+ 
+                            <div class="khusus-admin" style="margin-top: 16px; padding-top: 16px; border-top: 1px dashed var(--garis-tipis);">
+                                <div class="row g-2 align-items-end">
+                                    <div class="col-6">
+                                        <label style="font-size: 10px; color: var(--warna-redup); font-weight: 700; text-transform: uppercase;">Harga</label>
+                                        <input type="number" class="form-control input-minimalist input-edit-harga" style="padding: 8px 12px; font-size: 13px;" data-id="${p.id}" value="${p.harga}">
+                                    </div>
+                                    <div class="col-6">
+                                        <label style="font-size: 10px; color: var(--warna-redup); font-weight: 700; text-transform: uppercase;">Stok</label>
+                                        <input type="number" class="form-control input-minimalist input-edit-stok" style="padding: 8px 12px; font-size: 13px;" data-id="${p.id}" value="${p.stock !== undefined ? p.stock : 0}">
+                                    </div>
+                                    <div class="col-12">
+                                        <label style="font-size: 10px; color: var(--warna-redup); font-weight: 700; text-transform: uppercase;">Deskripsi</label>
+                                        <textarea class="form-control input-minimalist input-edit-deskripsi" style="padding: 8px 12px; font-size: 13px;" rows="2" data-id="${p.id}" placeholder="Tambahkan deskripsi menu...">${p.description || ''}</textarea>
+                                    </div>
+                                    <div class="col-12 d-flex gap-2 mt-2">
+                                        <button type="button" class="btn-action-outline btn-simpan-edit-produk" style="flex:1;" data-id="${p.id}">Simpan Perubahan</button>
+                                        <button type="button" class="btn-hapus-item btn-hapus-produk" data-id="${p.id}">Hapus Produk</button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             `).join('');
+        }
+ 
+        // ======================================================================
+        //  EDIT & HAPUS PRODUK (khusus Admin)
+        // ======================================================================
+        function simpanEditProduk(id, hargaBaruStr, stokBaruStr, deskripsiBaru) {
+            const hargaBaru = parseInt(hargaBaruStr, 10);
+            const stokBaru = parseInt(stokBaruStr, 10);
+ 
+            if (isNaN(hargaBaru) || hargaBaru < 0 || isNaN(stokBaru) || stokBaru < 0) {
+                alert('Harga dan stok harus berupa angka yang valid.');
+                return;
+            }
+ 
+            const produk = dataProduk.find(p => p.id === id);
+            if (!produk) return;
+ 
+            produk.harga = hargaBaru;
+            produk.stock = stokBaru;
+            produk.description = (deskripsiBaru || '').trim();
+ 
+            renderKatalog();
+            simpanData();
+            alert('Data "' + produk.name + '" berhasil diperbarui!');
+        }
+ 
+        function hapusProduk(id) {
+            const produk = dataProduk.find(p => p.id === id);
+            if (!produk) return;
+ 
+            const yakin = confirm('Yakin mau hapus produk "' + produk.name + '" dari katalog?');
+            if (!yakin) return;
+ 
+            dataProduk = dataProduk.filter(p => p.id !== id);
+            renderKatalog();
+            simpanData();
         }
  
         // ======================================================================
