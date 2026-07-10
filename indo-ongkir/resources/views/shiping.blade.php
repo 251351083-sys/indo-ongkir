@@ -301,7 +301,7 @@
     </div>
  
     <div class="hero-artisan-title">
-        <span>Dipanggang Segar Setiap Pagi</span>
+        <span>Dipanggang Segar Setiap Hari</span>
         <h1>Karya Rasa Autentik.</h1>
     </div>
  
