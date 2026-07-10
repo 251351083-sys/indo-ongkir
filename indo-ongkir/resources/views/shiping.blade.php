@@ -724,7 +724,7 @@
                 body: JSON.stringify({
                     harga: hargaBaru,
                     stock: stokBaru,
-                    description: (deskripsiBaru || '').trim()
+                    description: (deskripsi || '').trim()
                 })
             })
                 .then(async res => {
