@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Muma Bakery</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=300;400;500;600;700;800&family=Playfair+Display:ital,wght=0,600;0,700;1,400&display=swap" rel="stylesheet">
@@ -345,14 +346,6 @@
  
             <div style="background: var(--bg-kartu); padding: 36px; border: 1px solid var(--garis-tipis); border-radius: 24px;">
                 <h5 class="mb-4" style="font-weight: 700; letter-spacing: -0.5px;">Registrasi Resep Menu Baru</h5>
-                <!--
-                    CATATAN INTEGRASI BACKEND:
-                    Form ini sekarang ditangani penuh oleh JavaScript (lihat formTambahProduk.addEventListener('submit', ...))
-                    supaya produk baru LANGSUNG muncul di katalog tanpa perlu backend jalan dulu.
-                    Kalau backend Laravel-mu (route product.store) sudah siap dan kamu mau data
-                    beneran tersimpan ke database, hapus baris "e.preventDefault();" di dalam
-                    fungsi tersebut, atau tambahkan fetch() ke endpoint kamu di situ.
-                -->
                 <form id="form-tambah-produk" action="{{ route('product.store') }}" method="POST" enctype="multipart/form-data" class="row g-3">
                     @csrf
                     <div class="col-md-3">
@@ -384,17 +377,20 @@
             <div class="row">
                 <div class="col-12 col-lg-8" id="bagian-katalog-produk">
                     <div class="row g-4" id="wadah-produk-katalog">
-                        {{-- Kartu produk sekarang dirender oleh JS lewat renderKatalog(),
-                             supaya produk dari admin (form di atas) dan dari database ($products,
-                             kalau backend mengirimkannya) bisa muncul di tempat yang sama. --}}
                         @if(isset($products) && count($products) > 0)
                             <script>
-                                // Kalau backend Laravel mengirim $products, kita suapkan ke array JS
                                 window.__produkDariServer = @json($products);
                             </script>
                         @endif
                     </div>
                 </div>
+ 
+                <script>
+                    // URL route buat update produk, "0" nanti diganti id asli di JS pas fetch()
+                    window.__urlProductUpdateBase = "{{ route('product.update', ['id' => '0']) }}";
+                    // URL route buat hapus produk, "0" nanti diganti id asli di JS pas fetch()
+                    window.__urlProductDeleteBase = "{{ route('product.destroy', ['id' => '0']) }}";
+                </script>
  
                 <div class="col-12 col-lg-4 khusus-pelanggan" id="bagian-keranjang-belanja">
                     <div class="p-4" style="background: var(--bg-kartu); border: 1px solid var(--garis-tipis); position: sticky; top: 40px; border-radius: 24px;">
@@ -497,11 +493,6 @@
     </div>
  
     <script>
-        // ======================================================================
-        //  GAMBAR CADANGAN (embedded SVG, tidak butuh internet).
-        //  Kalau foto produk gagal dimuat (link mati / diblok jaringan), ini
-        //  yang akan tampil, jadi kartu produk tidak pernah kosong/blank.
-        // ======================================================================
         const GAMBAR_CADANGAN = "data:image/svg+xml;utf8," + encodeURIComponent(`
             <svg xmlns="http://www.w3.org/2000/svg" width="600" height="412" viewBox="0 0 600 412">
                 <rect width="600" height="412" fill="#f4f2f0"/>
@@ -511,14 +502,6 @@
             </svg>
         `);
  
-        // ======================================================================
-        //  PENYIMPANAN PERMANEN DI BROWSER (localStorage)
-        //  Data akan tetap ada walau tab/browser ditutup atau di-refresh.
-        //  CATATAN: localStorage itu per-browser/per-device, jadi kalau dibuka
-        //  dari HP atau laptop lain datanya akan beda/kosong. Kalau butuh data
-        //  yang sinkron di semua device, itu artinya harus ke database (backend
-        //  Laravel), bukan localStorage.
-        // ======================================================================
         const KUNCI_PENYIMPANAN = 'muma_bakery_data_v1';
  
         function simpanData() {
@@ -544,34 +527,27 @@
             }
         }
  
-        // ======================================================================
-        //  DATA UTAMA
-        // ======================================================================
         const dataTersimpan = muatData();
  
-        // Produk: prioritas -> data tersimpan di browser > data dari backend ($products) > contoh bawaan
-        let dataProduk = (dataTersimpan && dataTersimpan.produk && dataTersimpan.produk.length > 0)
-            ? dataTersimpan.produk
-            : (window.__produkDariServer && window.__produkDariServer.length > 0)
-                ? window.__produkDariServer
+        let dataProduk = (window.__produkDariServer && window.__produkDariServer.length > 0)
+            ? window.__produkDariServer
+            : (dataTersimpan && dataTersimpan.produk && dataTersimpan.produk.length > 0)
+                ? dataTersimpan.produk
                 : [
                     { id: 'demo-1', name: 'Premium Dubai Pistachio Cookies', harga: 65000, weight: 250, stock: 20, description: 'Cookies premium dengan lelehan pistachio dan kunafa, renyah di luar lembut di dalam.', img: 'https://images.unsplash.com/photo-1499636136210-6f4ce91a094f?w=600' },
                     { id: 'demo-2', name: 'Butter Croissant Klasik', harga: 28000, weight: 90, stock: 30, description: 'Croissant mentega klasik, berlapis-lapis dan gurih, dipanggang segar tiap pagi.', img: 'https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=600' }
                   ];
  
-        // Isi keranjang: { id, name, harga, weight, qty }
         let dataKeranjang = (dataTersimpan && dataTersimpan.keranjang) ? dataTersimpan.keranjang : [];
  
-        // Antrean pesanan admin, diawali 1 contoh biar tabel tidak kosong (kalau belum pernah ada data tersimpan).
         let dataPesanan = (dataTersimpan && dataTersimpan.pesanan && dataTersimpan.pesanan.length > 0)
             ? dataTersimpan.pesanan
             : [
                 { order_id: 'MUMA-10294', customer_name: 'Rian Ardianto', total_weight: 450, city_name: 'Kota Jakarta Selatan', omset: 65000 }
               ];
  
-        // Baseline statistik dasbor (angka historis, di luar dataPesanan contoh di atas)
         const OMSET_BASELINE = 4250000;
-        const PAKET_BASELINE = 17; // + 1 dari dataPesanan contoh = 18 seperti tampilan awal
+        const PAKET_BASELINE = 17;
         const PCS_BASELINE = 42;
         const BERAT_BASELINE_KG = 12.6;
  
@@ -582,62 +558,67 @@
             perbaruiStatistik();
             aturModeAkses(false);
  
-            // ---- Tangkap submit form "Registrasi Resep Menu Baru" ----
             const formProduk = document.getElementById('form-tambah-produk');
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+ 
             formProduk.addEventListener('submit', function (e) {
-                e.preventDefault(); // <- lihat catatan integrasi backend di atas form ini
+                e.preventDefault();
  
                 const nama = formProduk.querySelector('[name="name"]').value.trim();
                 const harga = parseInt(formProduk.querySelector('[name="harga"]').value, 10);
                 const berat = parseInt(formProduk.querySelector('[name="weight"]').value, 10);
                 const stok = parseInt(formProduk.querySelector('[name="stock"]').value, 10);
-                const deskripsi = document.getElementById('input-deskripsi-produk').value.trim();
-                const fileFoto = document.getElementById('input-foto-produk').files[0];
  
                 if (!nama || !harga || !berat || !stok) {
                     alert('Semua kolom wajib diisi dengan angka yang benar.');
                     return;
                 }
  
-                function simpanProdukBaru(urlFoto) {
-                    dataProduk.push({
-                        id: 'prod-' + Date.now(),
-                        name: nama,
-                        harga: harga,
-                        weight: berat,
-                        stock: stok,
-                        description: deskripsi,
-                        img: urlFoto || GAMBAR_CADANGAN
+                const tombolSubmit = formProduk.querySelector('button[type="submit"]');
+                tombolSubmit.disabled = true;
+                tombolSubmit.innerText = 'Menyimpan...';
+ 
+                const formData = new FormData(formProduk);
+ 
+                fetch(formProduk.action, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json'
+                    },
+                    body: formData
+                })
+                    .then(async res => {
+                        let hasil;
+                        try {
+                            hasil = await res.json();
+                        } catch (parseErr) {
+                            throw new Error('Server merespons tanpa JSON yang valid (status ' + res.status + ')');
+                        }
+ 
+                        if (!res.ok || !hasil.success) {
+                            throw new Error(hasil.message || ('Gagal menyimpan produk (status ' + res.status + ')'));
+                        }
+ 
+                        return hasil;
+                    })
+                    .then(hasil => {
+                        dataProduk.push(hasil.product);
+                        renderKatalog();
+                        formProduk.reset();
+                        alert('Menu "' + nama + '" berhasil dipublish ke katalog!');
+                        pindahHalaman('halaman-katalog');
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        alert('Gagal menyimpan produk ke server: ' + err.message);
+                    })
+                    .finally(() => {
+                        tombolSubmit.disabled = false;
+                        tombolSubmit.innerText = 'Publish';
                     });
- 
-                    renderKatalog();
-                    simpanData();
-                    formProduk.reset();
-                    alert('Menu "' + nama + '" berhasil dipublish ke katalog!');
-                    pindahHalaman('halaman-katalog');
-                }
- 
-                if (fileFoto) {
-                    // Batas ukuran biar tidak bikin localStorage penuh (localStorage total cuma ~5-10MB)
-                    if (fileFoto.size > 1.5 * 1024 * 1024) {
-                        alert('Ukuran foto maksimal 1.5MB ya, biar tetap ringan tersimpan di browser.');
-                        return;
-                    }
-                    const pembaca = new FileReader();
-                    pembaca.onload = function (ev) {
-                        simpanProdukBaru(ev.target.result); // hasilnya data URL base64, langsung bisa dipakai di <img src>
-                    };
-                    pembaca.onerror = function () {
-                        alert('Gagal membaca file foto, produk tetap dipublish pakai foto cadangan.');
-                        simpanProdukBaru(null);
-                    };
-                    pembaca.readAsDataURL(fileFoto);
-                } else {
-                    simpanProdukBaru(null);
-                }
             });
  
-            // ---- Delegasi klik tombol "Pesan" di katalog (kerja untuk produk lama maupun baru) ----
             document.getElementById('wadah-produk-katalog').addEventListener('click', function (e) {
                 const tombolPesan = e.target.closest('.btn-pesan-produk');
                 if (tombolPesan) {
@@ -662,7 +643,6 @@
                 }
             });
  
-            // ---- Delegasi klik tombol hapus item di keranjang ----
             document.getElementById('konten-keranjang-dinamis').addEventListener('click', function (e) {
                 const tombol = e.target.closest('.btn-hapus-item');
                 if (!tombol) return;
@@ -670,9 +650,6 @@
             });
         });
  
-        // ======================================================================
-        //  RENDER KATALOG
-        // ======================================================================
         function renderKatalog() {
             const wadah = document.getElementById('wadah-produk-katalog');
             wadah.innerHTML = dataProduk.map(p => `
@@ -722,9 +699,6 @@
             `).join('');
         }
  
-        // ======================================================================
-        //  EDIT & HAPUS PRODUK (khusus Admin)
-        // ======================================================================
         function simpanEditProduk(id, hargaBaruStr, stokBaruStr, deskripsiBaru) {
             const hargaBaru = parseInt(hargaBaruStr, 10);
             const stokBaru = parseInt(stokBaruStr, 10);
@@ -734,33 +708,97 @@
                 return;
             }
  
-            const produk = dataProduk.find(p => p.id === id);
+            const produk = dataProduk.find(p => String(p.id) === String(id));
             if (!produk) return;
  
-            produk.harga = hargaBaru;
-            produk.stock = stokBaru;
-            produk.description = (deskripsiBaru || '').trim();
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+            const urlUpdate = window.__urlProductUpdateBase.replace(/\/0$/, '/' + id);
  
-            renderKatalog();
-            simpanData();
-            alert('Data "' + produk.name + '" berhasil diperbarui!');
+            fetch(urlUpdate, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    harga: hargaBaru,
+                    stock: stokBaru,
+                    description: (deskripsiBaru || '').trim()
+                })
+            })
+                .then(async res => {
+                    let hasil;
+                    try {
+                        hasil = await res.json();
+                    } catch (parseErr) {
+                        throw new Error('Server merespons tanpa JSON yang valid (status ' + res.status + ')');
+                    }
+ 
+                    if (!res.ok || !hasil.success) {
+                        throw new Error(hasil.message || ('Gagal menyimpan perubahan (status ' + res.status + ')'));
+                    }
+ 
+                    return hasil;
+                })
+                .then(() => {
+                    produk.harga = hargaBaru;
+                    produk.stock = stokBaru;
+                    produk.description = (deskripsiBaru || '').trim();
+ 
+                    renderKatalog();
+                    alert('Data "' + produk.name + '" berhasil diperbarui!');
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert('Gagal menyimpan perubahan ke server: ' + err.message);
+                });
         }
  
+        // ======================================================================
+        //  HAPUS PRODUK (khusus Admin) — sekarang benar-benar fetch ke backend,
+        //  bukan cuma menghapus dari tampilan array dataProduk saja.
+        // ======================================================================
         function hapusProduk(id) {
-            const produk = dataProduk.find(p => p.id === id);
+            const produk = dataProduk.find(p => String(p.id) === String(id));
             if (!produk) return;
  
             const yakin = confirm('Yakin mau hapus produk "' + produk.name + '" dari katalog?');
             if (!yakin) return;
  
-            dataProduk = dataProduk.filter(p => p.id !== id);
-            renderKatalog();
-            simpanData();
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+            const urlHapus = window.__urlProductDeleteBase.replace(/\/0\/delete$/, '/' + id + '/delete');
+ 
+            fetch(urlHapus, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json'
+                }
+            })
+                .then(async res => {
+                    let hasil;
+                    try {
+                        hasil = await res.json();
+                    } catch (parseErr) {
+                        throw new Error('Server merespons tanpa JSON yang valid (status ' + res.status + ')');
+                    }
+                    if (!res.ok || !hasil.success) {
+                        throw new Error(hasil.message || ('Gagal menghapus produk (status ' + res.status + ')'));
+                    }
+                    return hasil;
+                })
+                .then(() => {
+                    dataProduk = dataProduk.filter(p => String(p.id) !== String(id));
+                    renderKatalog();
+                    alert('Produk "' + produk.name + '" berhasil dihapus.');
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert('Gagal menghapus produk: ' + err.message);
+                });
         }
  
-        // ======================================================================
-        //  KERANJANG BELANJA
-        // ======================================================================
         function tambahKeKeranjang(id, nama, harga, berat) {
             const itemAda = dataKeranjang.find(item => item.id === id);
             if (itemAda) {
@@ -820,9 +858,6 @@
             pindahHalaman('halaman-logistik');
         }
  
-        // ======================================================================
-        //  NAVIGASI HALAMAN & MODE AKSES
-        // ======================================================================
         function pindahHalaman(idHalamanTarget) {
             document.querySelectorAll('.app-view-panel').forEach(sec => sec.classList.remove('view-active'));
             document.querySelectorAll('.dock-item').forEach(trig => trig.classList.remove('aktif'));
@@ -873,9 +908,6 @@
             }
         }
  
-        // ======================================================================
-        //  LOGISTIK / ONGKIR / BUAT PESANAN
-        // ======================================================================
         document.getElementById('pilih-provinsi').addEventListener('change', function () {
             const provId = this.value;
             const kotaSel = document.getElementById('pilih-kota');
@@ -925,7 +957,6 @@
             const totalBerat = dataKeranjang.reduce((sum, item) => sum + (item.weight * item.qty), 0);
             const totalHarga = dataKeranjang.reduce((sum, item) => sum + (item.harga * item.qty), 0);
  
-            // Masukkan pesanan baru ke antrean admin
             dataPesanan.push({
                 order_id: acakID,
                 customer_name: namaPenerima,
@@ -936,7 +967,6 @@
             renderPesanan();
             perbaruiStatistik();
  
-            // Kosongkan keranjang setelah checkout berhasil
             dataKeranjang = [];
             renderKeranjang();
             simpanData();
@@ -958,9 +988,6 @@
             alert("Pesanan #" + acakID + " Berhasil Dibuat! Data langsung masuk ke Antrean Admin.");
         }
  
-        // ======================================================================
-        //  ANTREAN ADMIN & STATISTIK
-        // ======================================================================
         function renderPesanan() {
             const tabel = document.getElementById('tabel-antrean-admin');
             tabel.innerHTML = dataPesanan.map(o => `
@@ -985,9 +1012,6 @@
             document.getElementById('stat-berat').innerText = (BERAT_BASELINE_KG + totalBeratTambahanKg).toFixed(1) + ' Kg';
         }
  
-        // ======================================================================
-        //  CETAK LABEL PENGIRIMAN
-        // ======================================================================
         function resetSemuaData() {
             const yakin = confirm('Ini akan menghapus semua data produk, keranjang, dan pesanan yang tersimpan di browser ini. Lanjutkan?');
             if (!yakin) return;
@@ -1003,4 +1027,3 @@
     </script>
 </body>
 </html>
- 

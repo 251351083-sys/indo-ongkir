@@ -26,8 +26,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/get-cities/{province_id}', [ShippingController::class, 'getCities'])->name('get.cities');
     Route::post('/check-cost', [ShippingController::class, 'checkCost'])->name('check.cost');
 
-    // 🟢 TAMBAHKAN RUTE INI (Untuk Handle Form Input Produk khusus Owner)
+    // 🟢 RUTE PRODUK (Untuk Handle Form Input & Edit Produk khusus Owner)
     Route::post('/products', [ShippingController::class, 'storeProduct'])->name('product.store');
+    Route::post('/products/{id}', [ShippingController::class, 'updateProduct'])->name('product.update');
+    Route::post('/products/{id}/delete', [ShippingController::class, 'deleteProduct'])->name('product.destroy');
 
     // Cart
     Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
